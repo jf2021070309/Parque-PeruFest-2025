@@ -37,6 +37,24 @@ class _RegistroPantallaState extends State<RegistroPantalla> {
                   'Registrate',
                   style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
                 ),
+                const SizedBox(height: 16),
+                Container(
+                  height: 180, // Mismo tamaño que en login
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 40), // Mismo padding que en login
+                  child: Image.asset(
+                    'assets/images/logo.png',
+                    fit: BoxFit.contain,
+                    filterQuality: FilterQuality.high,
+                    errorBuilder: (context, error, stackTrace) {
+                      return const Icon(
+                        Icons.image_not_supported,
+                        size: 120,
+                        color: Colors.grey,
+                      );
+                    },
+                  ),
+                ),
                 const SizedBox(height: 24),
                 TextFormField(
                   decoration: const InputDecoration(

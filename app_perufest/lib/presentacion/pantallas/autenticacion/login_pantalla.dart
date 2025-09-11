@@ -29,12 +29,34 @@ class _LoginPantallaState extends State<LoginPantalla> {
             key: _formKey,
             child: Column(
               children: [
-                const SizedBox(height: 48),
-                const SizedBox(height: 100), // Espacio donde estaba el logo
+                const SizedBox(height: 80), // Más espacio arriba
+                Container(
+                  height: 180, // Aumentamos el tamaño del logo
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 40,
+                  ), // Más padding horizontal
+                  child: Image.asset(
+                    'assets/images/logo.png',
+                    fit: BoxFit.contain,
+                    filterQuality: FilterQuality.high,
+                    errorBuilder: (context, error, stackTrace) {
+                      return const Icon(
+                        Icons.image_not_supported,
+                        size: 120, // Aumentamos el ícono de error también
+                        color: Colors.grey,
+                      );
+                    },
+                  ),
+                ),
                 const SizedBox(height: 8),
                 const Text(
-                  'Login',
-                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                  'Iniciar sesión',
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
                 ),
                 const SizedBox(height: 24),
                 TextFormField(
@@ -157,8 +179,11 @@ class _LoginPantallaState extends State<LoginPantalla> {
                                   ),
                                 )
                                 : const Text(
-                                  'Login',
-                                  style: TextStyle(fontSize: 16),
+                                  'Iniciar sesión',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.white,
+                                  ),
                                 ),
                       ),
                     );
@@ -180,7 +205,7 @@ class _LoginPantallaState extends State<LoginPantalla> {
                       },
                       child: const Text(
                         'Registrate',
-                        style: TextStyle(color: Color(0xFF1976D2)),
+                        style: TextStyle(color: Colors.blue),
                       ),
                     ),
                   ],

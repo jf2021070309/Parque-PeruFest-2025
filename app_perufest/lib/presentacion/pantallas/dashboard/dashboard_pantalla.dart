@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../autenticacion/login_pantalla.dart';
 
 class DashboardPantalla extends StatefulWidget {
   const DashboardPantalla({super.key});
@@ -38,6 +39,52 @@ class _DashboardPantallaState extends State<DashboardPantalla> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('PeruFest'),
+        automaticallyImplyLeading: false, // Quita el botón de back
+        actions: [
+          IconButton(
+            onPressed: () {
+              // Mostrar diálogo de confirmación
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: const Text('Cerrar Sesión'),
+                    content: const Text(
+                      '¿Estás seguro que deseas cerrar sesión?',
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop(); // Cerrar diálogo
+                        },
+                        child: const Text('Cancelar'),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop(); // Cerrar diálogo
+                          Navigator.pushAndRemoveUntil(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const LoginPantalla(),
+                            ),
+                            (route) =>
+                                false, // Remover todas las rutas anteriores
+                          );
+                        },
+                        child: const Text('Cerrar Sesión'),
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
+            icon: const Icon(Icons.logout),
+            tooltip: 'Cerrar Sesión',
+          ),
+        ],
+      ),
       body: _obtenerPantalla(),
       bottomNavigationBar: BottomNavigationBar(
         type:
