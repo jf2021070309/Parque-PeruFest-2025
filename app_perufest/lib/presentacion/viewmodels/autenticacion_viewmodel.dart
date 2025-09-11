@@ -177,8 +177,32 @@ class AutenticacionViewModel extends ChangeNotifier {
 
       if (exito) {
         // Después del registro exitoso, hacer login automático
-        await loginSeguro(correo, contrasena);
-        print('✅ Registro seguro exitoso');
+        print('🔐 Haciendo login automático después del registro...');
+
+        final usuarioData = await _autenticacionService.iniciarSesion(
+          correo,
+          contrasena,
+        );
+
+        if (usuarioData != null) {
+          // Convertir Map a objeto Usuario si es necesario
+          usuario = Usuario(
+            id: usuarioData['id'],
+            nombre: usuarioData['nombre'],
+            username: usuarioData['username'],
+            correo: usuarioData['correo'],
+            telefono: usuarioData['telefono'],
+            rol: usuarioData['rol'],
+            contrasena: '', // No almacenar contraseña
+          );
+          estado = EstadoAutenticacion.autenticado;
+          mensajeError = null;
+          print('✅ Registro y login automático exitosos');
+        } else {
+          estado = EstadoAutenticacion.error;
+          mensajeError = 'Usuario registrado pero error en login automático';
+          print('❌ Error en login automático después del registro');
+        }
       } else {
         estado = EstadoAutenticacion.error;
         mensajeError = 'Error al registrar. El correo o username ya existen.';
@@ -190,6 +214,8 @@ class AutenticacionViewModel extends ChangeNotifier {
       mensajeError =
           'Error al registrar. Verifica tu conexión e intenta de nuevo.';
     }
+
+    print('🔄 Estado final del registro: $estado');
     notifyListeners();
   }
 }

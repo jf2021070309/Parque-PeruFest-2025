@@ -145,19 +145,28 @@ class _RegistroPantallaState extends State<RegistroPantalla> {
                                         // Mostrar feedback inmediato
                                         FocusScope.of(context).unfocus();
 
-                                        await viewModel.registrar(
-                                          '', // nombre completo no se pide en UI
-                                          username,
-                                          correo,
-                                          telefono,
-                                          'usuario',
-                                          contrasena,
+                                        await viewModel.registrarSeguro(
+                                          nombre:
+                                              '', // nombre completo no se pide en UI
+                                          username: username,
+                                          correo: correo,
+                                          telefono: telefono,
+                                          contrasena: contrasena,
+                                          rol: 'usuario',
                                         );
 
                                         if (!mounted) return;
 
+                                        print(
+                                          '🔍 Estado después del registro: ${viewModel.estado}',
+                                        );
+                                        print(
+                                          '🔍 Usuario: ${viewModel.usuario?.correo}',
+                                        );
+
                                         if (viewModel.estado ==
                                             EstadoAutenticacion.autenticado) {
+                                          print('✅ Navegando al dashboard...');
                                           Navigator.pushAndRemoveUntil(
                                             context,
                                             MaterialPageRoute(
@@ -166,6 +175,22 @@ class _RegistroPantallaState extends State<RegistroPantalla> {
                                                       const DashboardPantalla(),
                                             ),
                                             (route) => false,
+                                          );
+                                        } else if (viewModel.estado ==
+                                            EstadoAutenticacion.error) {
+                                          print(
+                                            '❌ Error en registro: ${viewModel.mensajeError}',
+                                          );
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            SnackBar(
+                                              content: Text(
+                                                viewModel.mensajeError ??
+                                                    'Error desconocido',
+                                              ),
+                                              backgroundColor: Colors.red,
+                                            ),
                                           );
                                         }
                                       }

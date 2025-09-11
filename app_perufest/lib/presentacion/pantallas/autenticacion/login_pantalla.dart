@@ -157,12 +157,17 @@ class _LoginPantallaState extends State<LoginPantalla> {
                                     // Mostrar feedback inmediato
                                     FocusScope.of(context).unfocus();
 
-                                    await viewModel.login(correo, contrasena);
+                                    await viewModel.loginSeguro(correo, contrasena);
 
                                     if (!mounted) return;
 
+                                    print('🔍 Estado después del login: ${viewModel.estado}');
+                                    print('🔍 Usuario: ${viewModel.usuario?.correo}');
+                                    print('🔍 Error: ${viewModel.mensajeError}');
+
                                     if (viewModel.estado ==
                                         EstadoAutenticacion.autenticado) {
+                                      print('✅ Navegando al dashboard...');
                                       if (mounted) {
                                         Navigator.pushReplacement(
                                           context,
@@ -173,6 +178,14 @@ class _LoginPantallaState extends State<LoginPantalla> {
                                           ),
                                         );
                                       }
+                                    } else if (viewModel.estado == EstadoAutenticacion.error) {
+                                      print('❌ Error en login: ${viewModel.mensajeError}');
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text(viewModel.mensajeError ?? 'Error de autenticación'),
+                                          backgroundColor: Colors.red,
+                                        ),
+                                      );
                                     }
                                   }
                                 },
