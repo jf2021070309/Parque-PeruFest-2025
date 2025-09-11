@@ -1,0 +1,224 @@
+import 'package:flutter/material.dart';
+import '../../../core/utilidades/validador.dart';
+import '../../viewmodels/autenticacion_viewmodel.dart';
+import '../dashboard/dashboard_pantalla.dart';
+import 'registro_pantalla.dart';
+import 'package:provider/provider.dart';
+
+class LoginPantalla extends StatefulWidget {
+  const LoginPantalla({super.key});
+
+  @override
+  State<LoginPantalla> createState() => _LoginPantallaState();
+}
+
+class _LoginPantallaState extends State<LoginPantalla> {
+  final _formKey = GlobalKey<FormState>();
+  String correo = '';
+  String contrasena = '';
+  bool _obscure = true;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              children: [
+                const SizedBox(height: 48),
+                const SizedBox(height: 100), // Espacio donde estaba el logo
+                const SizedBox(height: 8),
+                const Text(
+                  'Login',
+                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 24),
+                TextFormField(
+                  decoration: const InputDecoration(
+                    labelText: 'Correo Electrónico',
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.email),
+                  ),
+                  keyboardType: TextInputType.emailAddress,
+                  validator: (v) {
+                    if (v == null || v.isEmpty) return 'Ingrese su correo';
+                    if (!RegExp(
+                      r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                    ).hasMatch(v)) {
+                      return 'Ingrese un correo válido';
+                    }
+                    return null;
+                  },
+                  onSaved: (v) => correo = v ?? '',
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  decoration: InputDecoration(
+                    labelText: 'Contraseña',
+                    border: const OutlineInputBorder(),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscure ? Icons.visibility_off : Icons.visibility,
+                      ),
+                      onPressed: () => setState(() => _obscure = !_obscure),
+                    ),
+                  ),
+                  obscureText: _obscure,
+                  validator: Validador.validarContrasena,
+                  onSaved: (v) => contrasena = v ?? '',
+                ),
+                const SizedBox(height: 8),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: () {},
+                    child: const Text(
+                      'Olvidaste tu contraseña?',
+                      style: TextStyle(color: Color(0xFF1976D2)),
+                    ),
+                  ),
+                ),
+                Consumer<AutenticacionViewModel>(
+                  builder: (context, viewModel, child) {
+                    return Column(
+                      children: [
+                        if (viewModel.estado == EstadoAutenticacion.cargando)
+                          const Padding(
+                            padding: EdgeInsets.all(16.0),
+                            child: CircularProgressIndicator(),
+                          ),
+                        if (viewModel.estado == EstadoAutenticacion.error)
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              viewModel.mensajeError ?? '',
+                              style: const TextStyle(color: Colors.red),
+                            ),
+                          ),
+                      ],
+                    );
+                  },
+                ),
+                const SizedBox(height: 8),
+                Consumer<AutenticacionViewModel>(
+                  builder: (context, viewModel, child) {
+                    return SizedBox(
+                      width: double.infinity,
+                      height: 48,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF8B1B1B),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        onPressed:
+                            viewModel.estado == EstadoAutenticacion.cargando
+                                ? null
+                                : () async {
+                                  if (_formKey.currentState?.validate() ??
+                                      false) {
+                                    _formKey.currentState?.save();
+
+                                    // Mostrar feedback inmediato
+                                    FocusScope.of(context).unfocus();
+
+                                    await viewModel.login(correo, contrasena);
+
+                                    if (!mounted) return;
+
+                                    if (viewModel.estado ==
+                                        EstadoAutenticacion.autenticado) {
+                                      if (mounted) {
+                                        Navigator.pushReplacement(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder:
+                                                (_) =>
+                                                    const DashboardPantalla(),
+                                          ),
+                                        );
+                                      }
+                                    }
+                                  }
+                                },
+                        child:
+                            viewModel.estado == EstadoAutenticacion.cargando
+                                ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                                : const Text(
+                                  'Login',
+                                  style: TextStyle(fontSize: 16),
+                                ),
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text('No tienes cuenta?'),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const RegistroPantalla(),
+                          ),
+                        );
+                      },
+                      child: const Text(
+                        'Registrate',
+                        style: TextStyle(color: Color(0xFF1976D2)),
+                      ),
+                    ),
+                  ],
+                ),
+                Row(
+                  children: const [
+                    Expanded(child: Divider()),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 8.0),
+                      child: Text('o'),
+                    ),
+                    Expanded(child: Divider()),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: OutlinedButton(
+                    onPressed: () {},
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Colors.grey),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(8)),
+                      ),
+                    ),
+                    child: const Text(
+                      'Iniciar sesión con Google',
+                      style: TextStyle(fontSize: 16),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
