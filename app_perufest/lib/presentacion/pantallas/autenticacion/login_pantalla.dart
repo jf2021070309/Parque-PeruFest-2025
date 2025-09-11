@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/utilidades/validador.dart';
 import '../../viewmodels/autenticacion_viewmodel.dart';
-import '../dashboard/dashboard_pantalla.dart';
+import '../../widgets/verificador_rol.dart';
 import 'registro_pantalla.dart';
 import '../recuperacion/recuperar_paso1.dart';
 import 'package:provider/provider.dart';
@@ -172,9 +172,7 @@ class _LoginPantallaState extends State<LoginPantalla> {
                                         Navigator.pushReplacement(
                                           context,
                                           MaterialPageRoute(
-                                            builder:
-                                                (_) =>
-                                                    const DashboardPantalla(),
+                                            builder: (_) => VerificadorRol(usuario: viewModel.usuario!),
                                           ),
                                         );
                                       }
