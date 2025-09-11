@@ -41,7 +41,9 @@ class _RegistroPantallaState extends State<RegistroPantalla> {
                 Container(
                   height: 180, // Mismo tamaño que en login
                   width: double.infinity,
-                  padding: const EdgeInsets.symmetric(horizontal: 40), // Mismo padding que en login
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 40,
+                  ), // Mismo padding que en login
                   child: Image.asset(
                     'assets/images/logo.png',
                     fit: BoxFit.contain,

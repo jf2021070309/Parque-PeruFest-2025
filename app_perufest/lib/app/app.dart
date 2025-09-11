@@ -6,6 +6,7 @@ import '../datos/repositorios/usuario_repositorio_impl.dart';
 import '../dominio/casos_uso/login_usuario.dart';
 import '../dominio/casos_uso/registrar_usuario.dart';
 import '../presentacion/viewmodels/autenticacion_viewmodel.dart';
+import '../presentacion/viewmodels/recuperacion_viewmodel.dart';
 import '../presentacion/pantallas/autenticacion/login_pantalla.dart';
 
 class MyApp extends StatelessWidget {
@@ -26,6 +27,7 @@ class MyApp extends StatelessWidget {
                 registrarUsuario: RegistrarUsuario(_repo),
               ),
         ),
+        ChangeNotifierProvider(create: (_) => RecuperacionViewModel()),
       ],
       child: MaterialApp(
         title: 'PeruFest',

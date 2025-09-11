@@ -3,6 +3,7 @@ import '../../../core/utilidades/validador.dart';
 import '../../viewmodels/autenticacion_viewmodel.dart';
 import '../dashboard/dashboard_pantalla.dart';
 import 'registro_pantalla.dart';
+import '../recuperacion/recuperar_paso1.dart';
 import 'package:provider/provider.dart';
 
 class LoginPantalla extends StatefulWidget {
@@ -97,7 +98,14 @@ class _LoginPantallaState extends State<LoginPantalla> {
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const RecuperarPaso1(),
+                        ),
+                      );
+                    },
                     child: const Text(
                       'Olvidaste tu contraseña?',
                       style: TextStyle(color: Color(0xFF1976D2)),
