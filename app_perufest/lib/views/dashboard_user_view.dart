@@ -18,18 +18,18 @@ class _DashboardUserViewState extends State<DashboardUserView> {
   final PageController _pageController = PageController();
 
   final List<Color> _eventoColors = [
-    const Color(0xFF2196F3), // Azul
-    const Color(0xFFE91E63), // Rosa
-    const Color(0xFF9C27B0), // Morado
-    const Color(0xFF673AB7), // Morado profundo
-    const Color(0xFF3F51B5), // Índigo
-    const Color(0xFF009688), // Teal
-    const Color(0xFF4CAF50), // Verde
-    const Color(0xFF8BC34A), // Verde claro
-    const Color(0xFFCDDC39), // Lime
-    const Color(0xFFFF9800), // Naranja
-    const Color(0xFFFF5722), // Rojo-naranja
-    const Color(0xFF795548), // Marrón
+    const Color(0xFF8B1B1B), // Guinda principal
+    const Color(0xFFA52A2A), // Rojo-marrón
+    const Color(0xFF8B0000), // Rojo oscuro
+    const Color(0xFF800020), // Burgundy
+    const Color(0xFF722F37), // Marrón-rojo
+    const Color(0xFF9B1B1B), // Guinda claro
+    const Color(0xFF7B1B1B), // Guinda oscuro
+    const Color(0xFF8B2635), // Guinda-rosado
+    const Color(0xFF8B3A3A), // Rojo tierra
+    const Color(0xFF8B4B4B), // Rojo suave
+    const Color(0xFFB22222), // Firebrick
+    const Color(0xFF8B4513), // Saddle brown
   ];
 
   @override
@@ -97,7 +97,7 @@ class _DashboardUserViewState extends State<DashboardUserView> {
       expandedHeight: 200.0,
       floating: false,
       pinned: true,
-      backgroundColor: Colors.deepPurple.shade600,
+      backgroundColor: const Color(0xFF8B1B1B),
       flexibleSpace: FlexibleSpaceBar(
         title: const Text(
           'PerúFest 2025',
@@ -118,8 +118,8 @@ class _DashboardUserViewState extends State<DashboardUserView> {
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                Colors.deepPurple.shade400,
-                Colors.deepPurple.shade800,
+                const Color(0xFF8B1B1B).withOpacity(0.9),
+                const Color(0xFF8B1B1B),
               ],
             ),
           ),
@@ -175,7 +175,7 @@ class _DashboardUserViewState extends State<DashboardUserView> {
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 1,
           mainAxisSpacing: 16.0,
-          childAspectRatio: 2.0,
+          childAspectRatio: 2.2, // Aumentado de 2.0 a 2.2 para dar más altura
         ),
         delegate: SliverChildBuilderDelegate(
           (context, index) {
@@ -300,6 +300,8 @@ class _DashboardUserViewState extends State<DashboardUserView> {
                         ),
                       ],
                     ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   
                   const SizedBox(height: 8),
@@ -312,6 +314,8 @@ class _DashboardUserViewState extends State<DashboardUserView> {
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   
                   const SizedBox(height: 16),
@@ -413,7 +417,7 @@ class _DashboardUserViewState extends State<DashboardUserView> {
             icon: const Icon(Icons.refresh),
             label: const Text('Actualizar'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.deepPurple.shade600,
+              backgroundColor: const Color(0xFF8B1B1B),
               foregroundColor: Colors.white,
             ),
           ),
@@ -456,7 +460,7 @@ class _DashboardUserViewState extends State<DashboardUserView> {
         },
         type: BottomNavigationBarType.fixed,
         backgroundColor: Colors.white,
-        selectedItemColor: Colors.deepPurple.shade600,
+        selectedItemColor: const Color(0xFF8B1B1B),
         unselectedItemColor: Colors.grey.shade600,
         selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
         items: const [

@@ -39,8 +39,8 @@ class PerfilVisitanteView extends StatelessWidget {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Colors.deepPurple.shade600,
-            Colors.deepPurple.shade400,
+            const Color(0xFF8B1B1B),
+            const Color(0xFF8B1B1B).withOpacity(0.8),
           ],
         ),
       ),
@@ -54,7 +54,7 @@ class PerfilVisitanteView extends StatelessWidget {
               child: Icon(
                 Icons.person,
                 size: 60,
-                color: Colors.deepPurple.shade600,
+                color: const Color(0xFF8B1B1B),
               ),
             ),
             const SizedBox(height: 16),
@@ -103,7 +103,7 @@ class PerfilVisitanteView extends StatelessWidget {
             children: [
               Icon(
                 Icons.info_outline,
-                color: Colors.deepPurple.shade600,
+                color: const Color(0xFF8B1B1B),
               ),
               const SizedBox(width: 12),
               const Text(
@@ -217,7 +217,7 @@ class PerfilVisitanteView extends StatelessWidget {
     return ListTile(
       leading: Icon(
         icon,
-        color: textColor ?? Colors.deepPurple.shade600,
+        color: textColor ?? const Color(0xFF8B1B1B),
         size: 28,
       ),
       title: Text(

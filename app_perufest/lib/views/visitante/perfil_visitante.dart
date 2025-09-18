@@ -28,7 +28,7 @@ class PerfilVisitante extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
-                        color: Colors.deepPurple.shade700,
+                        color: const Color(0xFF8B1B1B),
                       ),
                     ),
                     
@@ -124,7 +124,7 @@ class PerfilVisitante extends StatelessWidget {
             children: [
               Icon(
                 icono,
-                color: Colors.deepPurple.shade600,
+                color: const Color(0xFF8B1B1B),
                 size: 24,
               ),
               const SizedBox(width: 12),

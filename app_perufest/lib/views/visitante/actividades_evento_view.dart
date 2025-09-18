@@ -19,16 +19,16 @@ class _ActividadesEventoViewState extends State<ActividadesEventoView>
   List<DateTime> _diasEvento = [];
 
   final List<Color> _colorPalette = [
-    const Color(0xFF6A4C93), // Morado
-    const Color(0xFF1976D2), // Azul
-    const Color(0xFFD32F2F), // Rojo
-    const Color(0xFF388E3C), // Verde
-    const Color(0xFFF57C00), // Naranja
-    const Color(0xFF7B1FA2), // Morado oscuro
-    const Color(0xFF00796B), // Teal
-    const Color(0xFFE64A19), // Rojo-naranja
-    const Color(0xFF303F9F), // Índigo
-    const Color(0xFF689F38), // Verde claro
+    const Color(0xFF8B1B1B), // Guinda principal
+    const Color(0xFFA52A2A), // Rojo-marrón
+    const Color(0xFF8B0000), // Rojo oscuro
+    const Color(0xFF800020), // Burgundy
+    const Color(0xFF722F37), // Marrón-rojo
+    const Color(0xFF9B1B1B), // Guinda claro
+    const Color(0xFF7B1B1B), // Guinda oscuro
+    const Color(0xFF8B2635), // Guinda-rosado
+    const Color(0xFF8B3A3A), // Rojo tierra
+    const Color(0xFF8B4B4B), // Rojo suave
   ];
 
   @override
@@ -103,7 +103,7 @@ class _ActividadesEventoViewState extends State<ActividadesEventoView>
       expandedHeight: 250.0,
       floating: false,
       pinned: true,
-      backgroundColor: Colors.deepPurple.shade600,
+      backgroundColor: const Color(0xFF8B1B1B),
       leading: IconButton(
         icon: const Icon(Icons.arrow_back, color: Colors.white),
         onPressed: () => Navigator.pop(context),
@@ -116,9 +116,9 @@ class _ActividadesEventoViewState extends State<ActividadesEventoView>
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                Colors.deepPurple.shade400,
-                Colors.deepPurple.shade800,
-                Colors.indigo.shade900,
+                const Color(0xFF8B1B1B).withOpacity(0.9),
+                const Color(0xFF8B1B1B),
+                const Color(0xFF8B0000),
               ],
             ),
           ),
@@ -504,7 +504,7 @@ class _ActividadesEventoViewState extends State<ActividadesEventoView>
             icon: const Icon(Icons.refresh),
             label: const Text('Reintentar'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.deepPurple.shade600,
+              backgroundColor: const Color(0xFF8B1B1B),
               foregroundColor: Colors.white,
             ),
           ),
