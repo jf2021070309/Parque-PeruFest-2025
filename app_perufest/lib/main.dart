@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'app.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -12,5 +13,10 @@ void main() async {
       debugPrint('Error al inicializar Firebase: $e');
     }
   }
+  // Inicializar Supabase
+  await Supabase.initialize(
+    url: 'https://miiavhizwsbjhqmwfsac.supabase.co',
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1paWF2aGl6d3NiamhxbXdmc2FjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc1NzQ4ODgsImV4cCI6MjA3MzE1MDg4OH0.qpvupYcgB37twSDvlExCKXklf-X1lm2rfx6UJhWx-b8',
+  );
   runApp(const MyApp());
 }

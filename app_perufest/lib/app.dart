@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'viewmodels/auth_viewmodel.dart';
 import 'viewmodels/eventos_viewmodel.dart';
+import 'viewmodels/recuperacion_viewmodel.dart';
 import 'views/login_view.dart';
 
 class MyApp extends StatelessWidget {
@@ -13,6 +14,7 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthViewModel()),
         ChangeNotifierProvider(create: (_) => EventosViewModel()),
+        ChangeNotifierProvider(create: (_) => RecuperacionViewModel()),
       ],
       child: MaterialApp(
         title: 'PeruFest',
