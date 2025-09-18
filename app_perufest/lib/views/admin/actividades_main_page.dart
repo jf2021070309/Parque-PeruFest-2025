@@ -4,14 +4,14 @@ import '../../models/evento.dart';
 import '../../viewmodels/eventos_viewmodel.dart';
 import 'gestionar_actividades_page.dart';
 
-class ActividadesPage extends StatefulWidget {
-  const ActividadesPage({super.key});
+class ActividadesMainPage extends StatefulWidget {
+  const ActividadesMainPage({super.key});
 
   @override
-  State<ActividadesPage> createState() => _ActividadesPageState();
+  State<ActividadesMainPage> createState() => _ActividadesMainPageState();
 }
 
-class _ActividadesPageState extends State<ActividadesPage> {
+class _ActividadesMainPageState extends State<ActividadesMainPage> {
   @override
   void initState() {
     super.initState();
@@ -27,56 +27,63 @@ class _ActividadesPageState extends State<ActividadesPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<EventosViewModel>(
-      builder: (context, viewModel, child) {        
-        if (viewModel.isLoading) {
-          return const Center(child: CircularProgressIndicator());
-        }
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Gestión de Actividades'),
+        backgroundColor: Colors.blue.shade600,
+        foregroundColor: Colors.white,
+      ),
+      body: Consumer<EventosViewModel>(
+        builder: (context, viewModel, child) {
+          if (viewModel.isLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-        if (viewModel.state == EventosState.error) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.error, size: 64, color: Colors.red.shade400),
-                const SizedBox(height: 16),
-                Text(
-                  'Error al cargar eventos',
-                  style: TextStyle(fontSize: 18, color: Colors.grey.shade600),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  viewModel.errorMessage,
-                  style: TextStyle(color: Colors.grey.shade500),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 24),
-                ElevatedButton.icon(
-                  onPressed: _cargarEventos,
-                  icon: const Icon(Icons.refresh),
-                  label: const Text('Reintentar'),
-                ),
-              ],
+          if (viewModel.state == EventosState.error) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.error, size: 64, color: Colors.red.shade400),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Error al cargar eventos',
+                    style: TextStyle(fontSize: 18, color: Colors.grey.shade600),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    viewModel.errorMessage,
+                    style: TextStyle(color: Colors.grey.shade500),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton.icon(
+                    onPressed: _cargarEventos,
+                    icon: const Icon(Icons.refresh),
+                    label: const Text('Reintentar'),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          if (!viewModel.hasEventos) {
+            return _buildSinEventos();
+          }
+
+          return RefreshIndicator(
+            onRefresh: _cargarEventos,
+            child: ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: viewModel.eventos.length,
+              itemBuilder: (context, index) {
+                final evento = viewModel.eventos[index];
+                return _buildTarjetaEvento(evento);
+              },
             ),
           );
-        }
-
-        if (!viewModel.hasEventos) {
-          return _buildSinEventos();
-        }
-
-        return RefreshIndicator(
-          onRefresh: _cargarEventos,
-          child: ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: viewModel.eventos.length,
-            itemBuilder: (context, index) {
-              final evento = viewModel.eventos[index];
-              return _buildTarjetaEvento(evento);
-            },
-          ),
-        );
-      },
+        },
+      ),
     );
   }
 

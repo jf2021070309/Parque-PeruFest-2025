@@ -22,6 +22,9 @@ class EventosViewModel extends ChangeNotifier {
     _setState(EventosState.loading);
     
     try {
+      // Primero intentamos crear eventos de prueba si no existen
+      await EventosService.crearEventosPrueba();
+      
       _eventos = await EventosService.obtenerEventos();
       _eventosFiltrados = List.from(_eventos);
       _setState(EventosState.success);
