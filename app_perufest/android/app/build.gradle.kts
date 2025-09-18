@@ -27,7 +27,7 @@ android {
         applicationId = "com.example.app_perufest"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = 23  // Actualizado para Firebase Auth
+        minSdk = flutter.minSdkVersion  // Actualizado para Firebase Auth
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
