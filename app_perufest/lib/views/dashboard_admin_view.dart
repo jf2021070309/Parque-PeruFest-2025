@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'admin/noticias_page.dart';
 import 'admin/eventos_page.dart';
 import 'admin/actividades_page.dart';
 import 'admin/estadisticas_page.dart';
+import '../viewmodels/auth_viewmodel.dart';
 
 class DashboardAdminView extends StatefulWidget {
   const DashboardAdminView({super.key});
@@ -28,11 +30,44 @@ class _DashboardAdminViewState extends State<DashboardAdminView> {
     });
   }
 
+  void _cerrarSesion() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Cerrar Sesión'),
+        content: const Text('¿Estás seguro de que quieres cerrar sesión?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () {
+              // Usar tu método logout existente
+              context.read<AuthViewModel>().logout();
+              Navigator.pop(context);
+              // Navegar al login
+              Navigator.pushReplacementNamed(context, '/login');
+            },
+            child: const Text('Cerrar Sesión', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Dashboard Administrador'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            tooltip: 'Cerrar Sesión',
+            onPressed: _cerrarSesion,
+          ),
+        ],
       ),
       body: SafeArea(
         child: _pages[_currentIndex],
@@ -62,9 +97,4 @@ class _DashboardAdminViewState extends State<DashboardAdminView> {
       ),
     );
   }
-
-  // Método estático para acceder al estado desde otras páginas
-  //static _DashboardAdminViewState? of(BuildContext context) {
-    //return context.findAncestorStateOfType<_DashboardAdminViewState>();
-  //}
 }

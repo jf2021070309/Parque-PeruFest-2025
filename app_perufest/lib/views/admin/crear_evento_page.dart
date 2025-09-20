@@ -262,18 +262,20 @@ class _CrearEventoPageState extends State<CrearEventoPage> {
                         Row(
                           children: [
                             Expanded(
-                              child: OutlinedButton.icon(
+                              child: ElevatedButton.icon(
                                 onPressed: _cambiarImagen,
+                                style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
                                 icon: const Icon(Icons.refresh),
                                 label: const Text('Cambiar imagen'),
                               ),
                             ),
                             const SizedBox(width: 8),
                             Expanded(
-                              child: OutlinedButton.icon(
+                              child: ElevatedButton.icon(
                                 onPressed: _eliminarImagen,
-                                icon: const Icon(Icons.delete, color: Colors.red),
-                                label: const Text('Quitar', style: TextStyle(color: Colors.red)),
+                                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                                icon: const Icon(Icons.delete),
+                                label: const Text('Quitar'),
                               ),
                             ),
                           ],
@@ -351,36 +353,38 @@ class _CrearEventoPageState extends State<CrearEventoPage> {
               const SizedBox(height: 24),
 
               // Botón crear evento
-              Consumer<EventosViewModel>(
-                builder: (context, viewModel, child) {
-                  final estaOcupado = viewModel.isLoading || _subiendoImagen;
-                  return ElevatedButton(
-                    onPressed: estaOcupado ? null : _crearEvento,
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                    ),
-                    child: estaOcupado
-                        ? Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
+              SafeArea(
+                child: Consumer<EventosViewModel>(
+                  builder: (context, viewModel, child) {
+                    final estaOcupado = viewModel.isLoading || _subiendoImagen;
+                    return ElevatedButton(
+                      onPressed: estaOcupado ? null : _crearEvento,
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                      ),
+                      child: estaOcupado
+                          ? Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(width: 12),
-                              Text(_subiendoImagen 
-                                  ? 'Subiendo imagen...' 
-                                  : 'Creando evento...'),
-                            ],
-                          )
-                        : const Text('Crear Evento'),
-                  );
-                },
+                                const SizedBox(width: 12),
+                                Text(_subiendoImagen 
+                                    ? 'Subiendo imagen...' 
+                                    : 'Creando evento...'),
+                              ],
+                            )
+                          : const Text('Crear Evento'),
+                    );
+                  },
+                ),
               ),
             ],
           ),

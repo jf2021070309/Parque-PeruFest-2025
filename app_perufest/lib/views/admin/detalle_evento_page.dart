@@ -433,26 +433,29 @@ class _DetalleEventoPageState extends State<DetalleEventoPage> {
   }
 
   Widget _buildBotonesAccion(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: OutlinedButton.icon(
-            onPressed: () => _editarEvento(context),
-            icon: const Icon(Icons.edit),
-            label: const Text('Editar'),
-          ),
-        ),
-        const SizedBox(width: 8),
-        if (eventoActual.estado == 'activo')
+    return SafeArea(
+      child: Row(
+        children: [
           Expanded(
             child: ElevatedButton.icon(
-              onPressed: () => _cambiarEstado(context, 'cancelado'),
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
-              icon: const Icon(Icons.cancel),
-              label: const Text('Cancelar'),
+              onPressed: () => _editarEvento(context),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+              icon: const Icon(Icons.edit),
+              label: const Text('Editar'),
             ),
           ),
-      ],
+          const SizedBox(width: 8),
+          if (eventoActual.estado == 'activo')
+            Expanded(
+              child: ElevatedButton.icon(
+                onPressed: () => _cambiarEstado(context, 'cancelado'),
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                icon: const Icon(Icons.cancel_presentation),
+                label: const Text('Cancelar Evento'),
+              ),
+            ),
+        ],
+      ),
     );
   }
 

@@ -48,66 +48,6 @@ class EventosService {
     }
   }
 
-  // Método para insertar datos de prueba
-  static Future<void> crearEventosPrueba() async {
-    try {
-      // Verificar si ya existen eventos
-      final existingEvents = await obtenerEventos();
-      if (existingEvents.isNotEmpty) {
-        if (kDebugMode) {
-          debugPrint('Ya existen eventos en la base de datos');
-        }
-        return;
-      }
-
-      final DateTime now = DateTime.now();
-      final List<Evento> eventosPrueba = [
-        Evento(
-          id: '',
-          nombre: 'PerúFest 2025',
-          descripcion: 'Festival cultural que celebra la riqueza y diversidad del Perú',
-          organizador: 'Ministerio de Cultura',
-          categoria: 'Festivales Culturales',
-          fechaInicio: DateTime(2025, 9, 19),
-          fechaFin: DateTime(2025, 9, 28),
-          lugar: 'Parque Perú',
-          imagenUrl: '',
-          creadoPor: 'admin',
-          estado: 'activo',
-          fechaCreacion: now,
-          fechaActualizacion: now,
-        ),
-        Evento(
-          id: '',
-          nombre: 'Feria Gastronómica',
-          descripcion: 'Muestra de la mejor gastronomía peruana',
-          organizador: 'Apega',
-          categoria: 'Ferias y Exposiciones',
-          fechaInicio: DateTime(2025, 10, 1),
-          fechaFin: DateTime(2025, 10, 3),
-          lugar: 'Parque Perú',
-          imagenUrl: '',
-          creadoPor: 'admin',
-          estado: 'activo',
-          fechaCreacion: now,
-          fechaActualizacion: now,
-        ),
-      ];
-
-      for (final evento in eventosPrueba) {
-        await crearEvento(evento);
-      }
-
-      if (kDebugMode) {
-        debugPrint('Eventos de prueba creados exitosamente');
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        debugPrint('Error al crear eventos de prueba: $e');
-      }
-    }
-  }
-
   static Future<List<Evento>> buscarEventos(String termino) async {
     try {
       final snapshot = await _db.collection(_collection).get();

@@ -369,21 +369,25 @@ class _EditarEventoPageState extends State<EditarEventoPage> {
                       Row(
                         children: [
                           Expanded(
-                            child: OutlinedButton.icon(
+                            child: ElevatedButton(
                               onPressed: _seleccionarNuevaImagen,
-                              icon: const Icon(Icons.photo_camera),
-                              label: const Text('Cambiar imagen'),
+                              style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blue),
+                              child: const Text('Cambiar imagen'),
                             ),
                           ),
                           if (_nuevaImagenSeleccionada != null) ...[
                             const SizedBox(width: 8),
-                            OutlinedButton.icon(
-                              onPressed: () => setState(() {
-                                _nuevaImagenSeleccionada = null;
-                                _imagenCambiada = false;
-                              }),
-                              icon: const Icon(Icons.restore, color: Colors.orange),
-                              label: const Text('Restaurar'),
+                            Expanded(
+                              child: ElevatedButton(
+                                onPressed: () => setState(() {
+                                  _nuevaImagenSeleccionada = null;
+                                  _imagenCambiada = false;
+                                }),
+                                style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.red),
+                                child: const Text('Restaurar'),
+                              ),
                             ),
                           ],
                         ],
@@ -408,37 +412,42 @@ class _EditarEventoPageState extends State<EditarEventoPage> {
               ),
 
               // Botones de acción
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('Cancelar'),
+              SafeArea(
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: () => Navigator.pop(context),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.grey),
+                        icon: const Icon(Icons.arrow_back),
+                        label: const Text('Atrás'),
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    flex: 2,
-                    child: Consumer<EventosViewModel>(
-                      builder: (context, viewModel, child) {
-                        final estaOcupado = viewModel.isLoading || _subiendoImagen;
-                        return ElevatedButton(
-                          onPressed: estaOcupado ? null : _actualizarEvento, // <-- usa estaOcupado
-                          style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                          ),
-                          child: estaOcupado  // <-- usa estaOcupado
-                              ? const SizedBox(
-                                  height: 20,
-                                  width: 20,
-                                  child: CircularProgressIndicator(strokeWidth: 2),
-                                )
-                              : const Text('Guardar Cambios'),
-                        );
-                      },
+                    const SizedBox(width: 8),
+                    Expanded(
+                      flex: 2,
+                      child: Consumer<EventosViewModel>(
+                        builder: (context, viewModel, child) {
+                          final estaOcupado = viewModel.isLoading || _subiendoImagen;
+                          return ElevatedButton.icon(
+                            onPressed: estaOcupado ? null : _actualizarEvento, // <-- usa estaOcupado
+                            style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                            icon: estaOcupado
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)
+                                ),
+                              )
+                              :const Icon(Icons.save),
+                            label: const Text('Guardar Cambios'),
+                          );
+                        },
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ],
           ),
@@ -455,17 +464,47 @@ class _EditarEventoPageState extends State<EditarEventoPage> {
 
     try {
       final ImagePicker picker = ImagePicker();
-      final XFile? imagen = await picker.pickImage(
-        source: ImageSource.gallery,
-        maxWidth: 1920,
-        maxHeight: 1080,
-        imageQuality: 85,
+      
+      // Mostrar opciones de selección
+      final opcion = await showModalBottomSheet<String>(
+        context: context,
+        builder: (context) => SafeArea(
+          child: Wrap(
+            children: [
+              ListTile(
+                leading: const Icon(Icons.camera_alt),
+                title: const Text('Tomar foto'),
+                onTap: () => Navigator.pop(context, 'camera'),
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('Seleccionar de galería'),
+                onTap: () => Navigator.pop(context, 'gallery'),
+              ),
+              ListTile(
+                leading: const Icon(Icons.cancel),
+                title: const Text('Cancelar'),
+                onTap: () => Navigator.pop(context),
+              ),
+            ],
+          ),
+        ),
       );
-      if (imagen != null) {
-        setState(() {
-          _nuevaImagenSeleccionada = File(imagen.path);
-          _imagenCambiada = true;
-        });
+
+      if (opcion != null) {
+        final XFile? imagen = await picker.pickImage(
+          source: opcion == 'camera' ? ImageSource.camera : ImageSource.gallery,
+          maxWidth: 1920,
+          maxHeight: 1080,
+          imageQuality: 85,
+        );
+        
+        if (imagen != null) {
+          setState(() {
+            _nuevaImagenSeleccionada = File(imagen.path);
+            _imagenCambiada = true;
+          });
+        }
       }
     } catch (e) {
       _mostrarError('Error al seleccionar imagen: $e');

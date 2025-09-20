@@ -9,24 +9,24 @@ class EventosViewModel extends ChangeNotifier {
   String _errorMessage = '';
   List<Evento> _eventos = [];
   List<Evento> _eventosFiltrados = [];
+  bool _isInitialized = false;
 
-  // Getters
   EventosState get state => _state;
   String get errorMessage => _errorMessage;
   List<Evento> get eventos => _eventosFiltrados;
   bool get isLoading => _state == EventosState.loading;
   bool get hasEventos => _eventosFiltrados.isNotEmpty;
+  bool get isInitialized => _isInitialized;
 
-  // Cargar todos los eventos
-  Future<void> cargarEventos() async {
+  Future<void> cargarEventos({bool forzarRecarga = false}) async {
+    if (_state == EventosState.loading && !forzarRecarga) return;
+    if (_isInitialized && !forzarRecarga) return;
     _setState(EventosState.loading);
     
     try {
-      // Primero intentamos crear eventos de prueba si no existen
-      await EventosService.crearEventosPrueba();
-      
       _eventos = await EventosService.obtenerEventos();
       _eventosFiltrados = List.from(_eventos);
+      _isInitialized = true;
       _setState(EventosState.success);
       
       if (kDebugMode) {
@@ -40,7 +40,14 @@ class EventosViewModel extends ChangeNotifier {
     }
   }
 
-  // Crear nuevo evento
+  Future<void> recargarEventos() async {
+    await cargarEventos(forzarRecarga: true);
+  }
+
+  void resetInitialization() {
+    _isInitialized = false;
+  }
+
   Future<bool> crearEvento(Evento evento) async {
     try {
       _setState(EventosState.loading);
@@ -65,7 +72,6 @@ class EventosViewModel extends ChangeNotifier {
     }
   }
 
-  // Actualizar evento
   Future<bool> actualizarEvento(String id, Evento evento) async {
     try {
       _setState(EventosState.loading);
@@ -93,7 +99,6 @@ class EventosViewModel extends ChangeNotifier {
     }
   }
 
-  // Eliminar evento
   Future<bool> eliminarEvento(String id) async {
     try {
       _setState(EventosState.loading);
@@ -117,7 +122,6 @@ class EventosViewModel extends ChangeNotifier {
     }
   }
 
-  // Actualizar estado del evento
   Future<bool> actualizarEstado(String id, String nuevoEstado) async {
     try {
       await EventosService.actualizarEstadoEvento(id, nuevoEstado);
@@ -143,7 +147,6 @@ class EventosViewModel extends ChangeNotifier {
     }
   }
 
-  // Buscar eventos
   void buscarEventos(String termino) {
     if (termino.isEmpty) {
       _eventosFiltrados = List.from(_eventos);
@@ -158,7 +161,6 @@ class EventosViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Filtrar por categoría
   void filtrarPorCategoria(String? categoria) {
     if (categoria == null || categoria.isEmpty) {
       _eventosFiltrados = List.from(_eventos);
@@ -168,7 +170,6 @@ class EventosViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Obtener evento por ID
   Future<Evento?> obtenerEvento(String id) async {
     try {
       return await EventosService.obtenerEventoPorId(id);
@@ -181,12 +182,10 @@ class EventosViewModel extends ChangeNotifier {
     }
   }
 
-  // Reset state
   void resetState() {
     _setState(EventosState.idle);
   }
 
-  // Métodos privados
   void _setState(EventosState newState) {
     _state = newState;
     if (newState != EventosState.error) {
