@@ -64,7 +64,6 @@ class _RegistroViewState extends State<RegistroView> {
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
 
     return Scaffold(
       backgroundColor: Colors.grey[100],

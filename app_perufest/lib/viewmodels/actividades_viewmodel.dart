@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import '../models/actividad.dart';
 import '../services/actividades_service.dart';
+import '../services/timezone.dart';
 
 enum ActividadesState { idle, loading, success, error }
 
@@ -88,7 +89,7 @@ class ActividadesViewModel extends ChangeNotifier {
         // Actualizar en la lista local
         final index = _actividades.indexWhere((a) => a.id == actividad.id);
         if (index != -1) {
-          _actividades[index] = actividad.copyWith(fechaActualizacion: DateTime.now());
+          _actividades[index] = actividad.copyWith(fechaActualizacion: TimezoneUtils.now()); // Changed this line
         }
         
         // Recargar para actualizar agrupación por días

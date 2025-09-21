@@ -9,7 +9,8 @@ class FirestoreService {
     final data = usuario.toJson();
     // Asegurar que no se incluya el campo password
     data.remove('password');
-    await _usuarios.add(data);
+    final docRef = await _usuarios.add(data);
+    print('📝 Usuario registrado con ID: ${docRef.id}');
   }
 
   static Future<Usuario?> loginUsuario(String correo, String contrasena) async {
@@ -17,9 +18,16 @@ class FirestoreService {
     final query =
         await _usuarios.where('correo', isEqualTo: correo).limit(1).get();
     if (query.docs.isNotEmpty) {
-      final data = query.docs.first.data();
+      final doc = query.docs.first;
+      final data = doc.data();
       print('📄 Datos del usuario encontrados: $data');
+      print('🆔 ID del documento: ${doc.id}');
+      
+      // Agregar el ID del documento a los datos
+      data['id'] = doc.id;
+      
       final usuario = Usuario.fromJson(data);
+      print('👤 Usuario creado con ID: ${usuario.id}');
       print('🔐 Contraseña almacenada: ${usuario.contrasena}');
       print('🔑 Verificando contraseña con bcrypt...');
       final coincide = BCrypt.checkpw(contrasena, usuario.contrasena);

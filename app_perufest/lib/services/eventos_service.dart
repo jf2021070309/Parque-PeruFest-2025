@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import '../models/evento.dart';
+import '../services/timezone.dart';
 
 class EventosService {
   static final FirebaseFirestore _db = FirebaseFirestore.instance;
@@ -8,7 +9,7 @@ class EventosService {
 
   static Future<String> crearEvento(Evento evento) async {
     try {
-      final DateTime now = DateTime.now();
+      final now = TimezoneUtils.now(); // Use Peru timezone
       final eventoData = evento.copyWith(
         fechaCreacion: now,
         fechaActualizacion: now,
@@ -118,7 +119,7 @@ class EventosService {
   static Future<void> actualizarEvento(String id, Evento evento) async {
     try {
       final eventoData = evento.copyWith(
-        fechaActualizacion: DateTime.now(),
+        fechaActualizacion: TimezoneUtils.now(), // Use Peru timezone
       ).toJson();
       
       await _db.collection(_collection).doc(id).update(eventoData);
@@ -153,7 +154,7 @@ class EventosService {
     try {
       await _db.collection(_collection).doc(id).update({
         'estado': nuevoEstado,
-        'fechaActualizacion': DateTime.now().toIso8601String(),
+        'fechaActualizacion': TimezoneUtils.now().toIso8601String(), // Use Peru timezone
       });
       
       if (kDebugMode) {

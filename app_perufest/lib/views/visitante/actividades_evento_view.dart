@@ -3,21 +3,24 @@ import 'package:provider/provider.dart';
 import '../../models/evento.dart';
 import '../../models/actividad.dart';
 import '../../viewmodels/actividades_viewmodel.dart';
-
+import '../../viewmodels/agenda_viewmodel.dart';
+import 'package:timezone/timezone.dart' as tz;
 class ActividadesEventoView extends StatefulWidget {
   final Evento evento;
+  final String userId; // Agregar userId como parámetro
 
-  const ActividadesEventoView({super.key, required this.evento});
-
+  const ActividadesEventoView({
+    super.key, 
+    required this.evento,
+    required this.userId,
+  });
   @override
   State<ActividadesEventoView> createState() => _ActividadesEventoViewState();
 }
-
 class _ActividadesEventoViewState extends State<ActividadesEventoView>
     with TickerProviderStateMixin {
   TabController? _tabController;
   List<DateTime> _diasEvento = [];
-
   final List<Color> _colorPalette = [
     const Color(0xFF8B1B1B), // Guinda principal
     const Color(0xFFA52A2A), // Rojo-marrón
@@ -30,40 +33,45 @@ class _ActividadesEventoViewState extends State<ActividadesEventoView>
     const Color(0xFF8B3A3A), // Rojo tierra
     const Color(0xFF8B4B4B), // Rojo suave
   ];
-
   @override
   void initState() {
     super.initState();
     _configurarDiasEvento();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      _configurarAgenda();
       _cargarActividades();
     });
   }
-
   void _configurarDiasEvento() {
     final viewModel = context.read<ActividadesViewModel>();
     _diasEvento = viewModel.generarDiasDelEvento(
       widget.evento.fechaInicio,
       widget.evento.fechaFin,
     );
-    
+
     _tabController = TabController(
       length: _diasEvento.length,
       vsync: this,
     );
   }
-
+  void _configurarAgenda() {
+    final agendaViewModel = context.read<AgendaViewModel>();
+    agendaViewModel.configurarUsuario(widget.userId);
+  }
   Future<void> _cargarActividades() async {
     final viewModel = context.read<ActividadesViewModel>();
     await viewModel.cargarActividadesPorEvento(widget.evento.id);
-  }
 
+    // Verificar estado de agenda para todas las actividades
+    final agendaViewModel = context.read<AgendaViewModel>();
+    final actividadesIds = viewModel.actividades.map((a) => a.id).toList();
+    await agendaViewModel.verificarEstadoActividades(actividadesIds);
+  }
   @override
   void dispose() {
     _tabController?.dispose();
     super.dispose();
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -97,7 +105,6 @@ class _ActividadesEventoViewState extends State<ActividadesEventoView>
       ),
     );
   }
-
   Widget _buildSliverAppBar() {
     return SliverAppBar(
       expandedHeight: 250.0,
@@ -109,7 +116,6 @@ class _ActividadesEventoViewState extends State<ActividadesEventoView>
         onPressed: () => Navigator.pop(context),
       ),
       flexibleSpace: FlexibleSpaceBar(
-        // Removido el título para evitar superposición
         background: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -124,7 +130,6 @@ class _ActividadesEventoViewState extends State<ActividadesEventoView>
           ),
           child: Stack(
             children: [
-              // Patrón decorativo
               Positioned(
                 right: -30,
                 top: -30,
@@ -134,7 +139,6 @@ class _ActividadesEventoViewState extends State<ActividadesEventoView>
                   color: Colors.white.withOpacity(0.1),
                 ),
               ),
-              // Información del evento centrada
               Center(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -142,7 +146,6 @@ class _ActividadesEventoViewState extends State<ActividadesEventoView>
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      // Título del evento más grande y centrado
                       Text(
                         widget.evento.nombre,
                         style: const TextStyle(
@@ -161,7 +164,6 @@ class _ActividadesEventoViewState extends State<ActividadesEventoView>
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 16),
-                      // Fechas del evento
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -182,7 +184,6 @@ class _ActividadesEventoViewState extends State<ActividadesEventoView>
                         ],
                       ),
                       const SizedBox(height: 12),
-                      // Ubicación del evento
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -225,14 +226,12 @@ class _ActividadesEventoViewState extends State<ActividadesEventoView>
           : null,
     );
   }
-
   Widget _buildActividadesContent(ActividadesViewModel viewModel) {
     if (_diasEvento.isEmpty) {
       return SliverFillRemaining(
         child: _buildEmptyDaysState(),
       );
     }
-
     return SliverFillRemaining(
       child: TabBarView(
         controller: _tabController,
@@ -240,17 +239,12 @@ class _ActividadesEventoViewState extends State<ActividadesEventoView>
       ),
     );
   }
-
   Widget _buildActividadesDia(ActividadesViewModel viewModel, DateTime dia) {
     final actividades = viewModel.obtenerActividadesDeDia(dia);
-
     if (actividades.isEmpty) {
       return _buildDiaSinActividades(dia);
     }
-
-    // Ordenar actividades por hora de inicio
     actividades.sort((a, b) => a.fechaInicio.compareTo(b.fechaInicio));
-
     return RefreshIndicator(
       onRefresh: _cargarActividades,
       child: ListView.builder(
@@ -264,7 +258,6 @@ class _ActividadesEventoViewState extends State<ActividadesEventoView>
       ),
     );
   }
-
   Widget _buildTarjetaActividad(Actividad actividad, Color color) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -343,9 +336,9 @@ class _ActividadesEventoViewState extends State<ActividadesEventoView>
                     ),
                   ],
                 ),
-                
+
                 const SizedBox(height: 16),
-                
+
                 // Nombre de la actividad
                 Text(
                   actividad.nombre,
@@ -355,9 +348,9 @@ class _ActividadesEventoViewState extends State<ActividadesEventoView>
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                
+
                 const SizedBox(height: 12),
-                
+
                 // Información adicional
                 Row(
                   children: [
@@ -376,7 +369,7 @@ class _ActividadesEventoViewState extends State<ActividadesEventoView>
                     ),
                   ],
                 ),
-                
+
                 if (actividad.zona.isNotEmpty) ...[
                   const SizedBox(height: 8),
                   Row(
@@ -399,6 +392,11 @@ class _ActividadesEventoViewState extends State<ActividadesEventoView>
                     ],
                   ),
                 ],
+
+                const SizedBox(height: 16),
+
+                // BOTÓN AGENDAR - NUEVA FUNCIONALIDAD
+                _buildBotonAgendar(actividad),
               ],
             ),
           ),
@@ -406,7 +404,103 @@ class _ActividadesEventoViewState extends State<ActividadesEventoView>
       ),
     );
   }
+  // Replace the _buildBotonAgendar method
+  Widget _buildBotonAgendar(Actividad actividad) {
+    return Consumer<AgendaViewModel>(
+      builder: (context, agendaViewModel, child) {
+        final estaEnAgenda = agendaViewModel.estaEnAgenda(actividad.id);
+        final estaCargando = agendaViewModel.estaCargando(actividad.id);
 
+        // Usar timezone de Perú
+        final ahoraPeruana = tz.TZDateTime.now(tz.getLocation('America/Lima'));
+        final yaInicio = ahoraPeruana.isAfter(actividad.fechaInicio);
+
+        if (yaInicio && !estaEnAgenda) {
+          return SizedBox(
+            width: double.infinity,
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Center(
+                child: Text(
+                  'Actividad ya iniciada',
+                  style: TextStyle(color: Colors.grey),
+                ),
+              ),
+            ),
+          );
+        }
+
+        return SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: estaCargando ? null : () => _manejarBotonAgendar(actividad),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: estaEnAgenda ? Colors.green : Colors.white,
+              foregroundColor: estaEnAgenda ? Colors.white : const Color(0xFF8B1B1B),
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: estaCargando 
+                ? const SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(estaEnAgenda ? Icons.check : Icons.add),
+                      const SizedBox(width: 8),
+                      Text(estaEnAgenda ? 'En agenda' : 'Agendar'),
+                    ],
+                  ),
+          ),
+        );
+      },
+    );
+  }
+  // Replace the _manejarBotonAgendar method
+  Future<void> _manejarBotonAgendar(Actividad actividad) async {
+    final agendaViewModel = context.read<AgendaViewModel>();
+
+    // Si está agregando, calcular recordatorio inteligente
+    if (!agendaViewModel.estaEnAgenda(actividad.id)) {
+      final ahoraPeruana = tz.TZDateTime.now(tz.getLocation('America/Lima'));
+      final minutosHastaInicio = actividad.fechaInicio.difference(ahoraPeruana).inMinutes;
+      final recordatorioMinutos = minutosHastaInicio > 30 ? 30 : (minutosHastaInicio > 5 ? minutosHastaInicio - 5 : 0);
+
+      agendaViewModel.setRecordatorioTemporal(recordatorioMinutos);
+    }
+
+    final exito = await agendaViewModel.alternarActividadEnAgenda(actividad.id);
+
+    if (mounted && exito) {
+      final estaEnAgenda = agendaViewModel.estaEnAgenda(actividad.id);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(estaEnAgenda 
+              ? 'Actividad agregada a tu agenda' 
+              : 'Actividad removida de tu agenda'),
+          backgroundColor: estaEnAgenda ? Colors.green : Colors.orange,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Error al procesar la solicitud'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+  }
   Widget _buildDiaSinActividades(DateTime dia) {
     return Center(
       child: Column(
@@ -438,7 +532,6 @@ class _ActividadesEventoViewState extends State<ActividadesEventoView>
       ),
     );
   }
-
   Widget _buildEmptyDaysState() {
     return Center(
       child: Column(
@@ -470,7 +563,6 @@ class _ActividadesEventoViewState extends State<ActividadesEventoView>
       ),
     );
   }
-
   Widget _buildErrorState(ActividadesViewModel viewModel) {
     return Center(
       child: Column(
@@ -512,16 +604,13 @@ class _ActividadesEventoViewState extends State<ActividadesEventoView>
       ),
     );
   }
-
   String _formatearFecha(DateTime fecha) {
     return '${fecha.day}/${fecha.month}/${fecha.year}';
   }
-
   String _formatearDiaTab(DateTime fecha) {
     const dias = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
     return '${dias[fecha.weekday - 1]} ${fecha.day}/${fecha.month}';
   }
-
   String _formatearDiaCompleto(DateTime fecha) {
     const dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
     const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];

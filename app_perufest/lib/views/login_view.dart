@@ -44,6 +44,8 @@ class _LoginViewState extends State<LoginView> {
           destino = const DashboardAdminView();
         } else if (rol == 'expositor') {
           destino = const DashboardExpositorView();
+        } else if (rol == 'usuario') {
+          destino = const DashboardUserView();
         } else {
           destino = const DashboardUserView();
         }

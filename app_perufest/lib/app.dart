@@ -5,10 +5,9 @@ import 'viewmodels/eventos_viewmodel.dart';
 import 'viewmodels/actividades_viewmodel.dart';
 import 'viewmodels/recuperacion_viewmodel.dart';
 import 'views/login_view.dart';
-
+import 'viewmodels/agenda_viewmodel.dart';
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
@@ -17,6 +16,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => EventosViewModel()),
         ChangeNotifierProvider(create: (_) => ActividadesViewModel()),
         ChangeNotifierProvider(create: (_) => RecuperacionViewModel()),
+        ChangeNotifierProvider(create: (_) => AgendaViewModel()),
       ],
       child: MaterialApp(
         title: 'PeruFest',

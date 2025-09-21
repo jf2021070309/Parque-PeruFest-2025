@@ -343,19 +343,23 @@ class _GestionarActividadesPageState extends State<GestionarActividadesPage>
           ),
           TextButton(
             onPressed: () async {
+              // Guardar referencia al contexto ANTES de pop
+              final scaffoldMessenger = ScaffoldMessenger.of(context);
               Navigator.pop(context);
+              
               final viewModel = context.read<ActividadesViewModel>();
               final exito = await viewModel.eliminarActividad(actividad.id);
               
-              if (exito && mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
+              // Usar la referencia guardada
+              if (exito) {
+                scaffoldMessenger.showSnackBar(
                   const SnackBar(
                     content: Text('Actividad eliminada correctamente'),
                     backgroundColor: Colors.green,
                   ),
                 );
-              } else if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
+              } else {
+                scaffoldMessenger.showSnackBar(
                   const SnackBar(
                     content: Text('Error al eliminar la actividad'),
                     backgroundColor: Colors.red,

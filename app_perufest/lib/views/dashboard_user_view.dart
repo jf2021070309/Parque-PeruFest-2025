@@ -574,10 +574,16 @@ class _DashboardUserViewState extends State<DashboardUserView> {
   }
 
   void _verActividadesEvento(Evento evento) {
+    final authViewModel = context.read<AuthViewModel>();
+    final currentUserId = authViewModel.currentUser?.id ?? '';
+    
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => ActividadesEventoView(evento: evento),
+        builder: (context) => ActividadesEventoView(
+          evento: evento, 
+          userId: currentUserId,
+        ),
       ),
     );
   }

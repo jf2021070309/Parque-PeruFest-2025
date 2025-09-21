@@ -1,3 +1,4 @@
+import '../services/timezone.dart';
 class Evento {
   final String id;
   final String nombre;
@@ -28,6 +29,73 @@ class Evento {
     required this.fechaCreacion,
     required this.fechaActualizacion,
   });
+
+  // Add getters for Peru timezone
+  DateTime get fechaInicioPeruana {
+    return TimezoneUtils.toPeru(fechaInicio);
+  }
+
+  DateTime get fechaFinPeruana {
+    return TimezoneUtils.toPeru(fechaFin);
+  }
+
+  DateTime get fechaCreacionPeruana {
+    return TimezoneUtils.toPeru(fechaCreacion);
+  }
+
+  DateTime get fechaActualizacionPeruana {
+    return TimezoneUtils.toPeru(fechaActualizacion);
+  }
+
+  // Add useful getters for display
+  String get fechaInicioFormateada {
+    final fecha = fechaInicioPeruana;
+    return '${fecha.day.toString().padLeft(2, '0')}/${fecha.month.toString().padLeft(2, '0')}/${fecha.year}';
+  }
+
+  String get fechaFinFormateada {
+    final fecha = fechaFinPeruana;
+    return '${fecha.day.toString().padLeft(2, '0')}/${fecha.month.toString().padLeft(2, '0')}/${fecha.year}';
+  }
+
+  String get horaInicioFormateada {
+    final fecha = fechaInicioPeruana;
+    return '${fecha.hour.toString().padLeft(2, '0')}:${fecha.minute.toString().padLeft(2, '0')}';
+  }
+
+  String get horaFinFormateada {
+    final fecha = fechaFinPeruana;
+    return '${fecha.hour.toString().padLeft(2, '0')}:${fecha.minute.toString().padLeft(2, '0')}';
+  }
+
+  String get duracionFormateada {
+    final duracion = fechaFinPeruana.difference(fechaInicioPeruana);
+    final dias = duracion.inDays;
+    
+    if (dias == 0) {
+      return 'Mismo día';
+    } else if (dias == 1) {
+      return '1 día';
+    } else {
+      return '$dias días';
+    }
+  }
+
+  // Check if event is active based on Peru time
+  bool get estaActivo {
+    final ahoraPeru = TimezoneUtils.now();
+    return ahoraPeru.isBefore(fechaFinPeruana) && estado == 'activo';
+  }
+
+  bool get yaTermino {
+    final ahoraPeru = TimezoneUtils.now();
+    return ahoraPeru.isAfter(fechaFinPeruana);
+  }
+
+  bool get yaEmpezo{
+    final ahoraPeru = TimezoneUtils.now();
+    return ahoraPeru.isAfter(fechaInicioPeruana);
+  }
 
   factory Evento.fromJson(Map<String, dynamic> json) {
     return Evento(

@@ -5,6 +5,7 @@ import '../../models/evento.dart';
 import '../../viewmodels/eventos_viewmodel.dart';
 import '../../services/validador_service.dart';
 import '../../services/imgbb_service.dart';
+import '../../services/timezone.dart';
 import 'dart:io';
 
 
@@ -53,20 +54,25 @@ class _EditarEventoPageState extends State<EditarEventoPage> {
     _cargarDatosEvento();
   }
 
-  void _cargarDatosEvento() {
-    final evento = widget.evento;
-    _nombreController.text = evento.nombre;
-    _descripcionController.text = evento.descripcion;
-    _organizadorController.text = evento.organizador;
-    _lugarController.text = evento.lugar;
-    _imagenUrlController.text = evento.imagenUrl;
-    _categoriaSeleccionada = evento.categoria;
-    _estadoSeleccionado = evento.estado;
-    _fechaInicio = evento.fechaInicio;
-    _fechaFin = evento.fechaFin;
-    _horaInicio = TimeOfDay.fromDateTime(evento.fechaInicio);
-    _horaFin = TimeOfDay.fromDateTime(evento.fechaFin);
-  }
+void _cargarDatosEvento() {
+  final evento = widget.evento;
+  _nombreController.text = evento.nombre;
+  _descripcionController.text = evento.descripcion;
+  _organizadorController.text = evento.organizador;
+  _lugarController.text = evento.lugar;
+  _imagenUrlController.text = evento.imagenUrl;
+  _categoriaSeleccionada = evento.categoria;
+  _estadoSeleccionado = evento.estado;
+  
+  // Convert to Peru timezone for display  
+  final fechaInicioPeruana = TimezoneUtils.toPeru(evento.fechaInicio);
+  final fechaFinPeruana = TimezoneUtils.toPeru(evento.fechaFin);
+  
+  _fechaInicio = DateTime(fechaInicioPeruana.year, fechaInicioPeruana.month, fechaInicioPeruana.day);
+  _fechaFin = DateTime(fechaFinPeruana.year, fechaFinPeruana.month, fechaFinPeruana.day);
+  _horaInicio = TimeOfDay.fromDateTime(fechaInicioPeruana);
+  _horaFin = TimeOfDay.fromDateTime(fechaFinPeruana);
+}
 
   @override
   void dispose() {
@@ -534,9 +540,9 @@ class _EditarEventoPageState extends State<EditarEventoPage> {
   Future<void> _seleccionarFecha(BuildContext context, bool esInicio) async {
     final fechaSeleccionada = await showDatePicker(
       context: context,
-      initialDate: esInicio ? _fechaInicio ?? DateTime.now() : _fechaFin ?? DateTime.now(),
-      firstDate: DateTime.now().subtract(const Duration(days: 365)),
-      lastDate: DateTime.now().add(const Duration(days: 365)),
+      initialDate: esInicio ? _fechaInicio ?? TimezoneUtils.today() : _fechaFin ?? TimezoneUtils.today(),
+      firstDate: TimezoneUtils.today().subtract(const Duration(days: 365)),
+      lastDate: TimezoneUtils.today().add(const Duration(days: 365)),
     );
 
     if (fechaSeleccionada != null) {
@@ -551,9 +557,12 @@ class _EditarEventoPageState extends State<EditarEventoPage> {
   }
 
   Future<void> _seleccionarHora(BuildContext context, bool esInicio) async {
+    final ahora = TimezoneUtils.now();
     final horaSeleccionada = await showTimePicker(
       context: context,
-      initialTime: esInicio ? _horaInicio ?? TimeOfDay.now() : _horaFin ?? TimeOfDay.now(),
+      initialTime: esInicio 
+          ? _horaInicio ?? TimeOfDay.fromDateTime(ahora)
+          : _horaFin ?? TimeOfDay.fromDateTime(ahora),
     );
 
     if (horaSeleccionada != null) {
@@ -570,9 +579,10 @@ class _EditarEventoPageState extends State<EditarEventoPage> {
   Future<void> _actualizarEvento() async {
     if (!_validarFormulario()) return;
 
-    final eventosViewModel = Provider.of<EventosViewModel>(context, listen: false); // <-- Mueve esto aquí
+    final eventosViewModel = Provider.of<EventosViewModel>(context, listen: false);
 
-    final fechaInicioCompleta = DateTime(
+    // Use TimezoneUtils instead of DateTime
+    final fechaInicioCompleta = TimezoneUtils.create(
       _fechaInicio!.year,
       _fechaInicio!.month,
       _fechaInicio!.day,
@@ -580,7 +590,7 @@ class _EditarEventoPageState extends State<EditarEventoPage> {
       _horaInicio!.minute,
     );
 
-    final fechaFinCompleta = DateTime(
+    final fechaFinCompleta = TimezoneUtils.create(
       _fechaFin!.year,
       _fechaFin!.month,
       _fechaFin!.day,
@@ -603,7 +613,7 @@ class _EditarEventoPageState extends State<EditarEventoPage> {
       lugar: _lugarController.text.trim(),
       imagenUrl: imagenUrlFinal ?? widget.evento.imagenUrl,
       estado: _estadoSeleccionado,
-      fechaActualizacion: DateTime.now(),
+      fechaActualizacion: TimezoneUtils.now(), // Use TimezoneUtils
     );
 
     final exito = await eventosViewModel.actualizarEvento(widget.evento.id, eventoActualizado);
@@ -620,44 +630,45 @@ class _EditarEventoPageState extends State<EditarEventoPage> {
     }
   }
 
-  bool _validarFormulario() {
-    if (!_formKey.currentState!.validate()) return false;
+bool _validarFormulario() {
+  if (!_formKey.currentState!.validate()) return false;
 
-    if (_fechaInicio == null) {
-      _mostrarError('Selecciona la fecha de inicio');
-      return false;
-    }
+  if (_fechaInicio == null) {
+    _mostrarError('Selecciona la fecha de inicio');
+    return false;
+  }
 
-    if (_horaInicio == null) {
-      _mostrarError('Selecciona la hora de inicio');
-      return false;
-    }
+  if (_horaInicio == null) {
+    _mostrarError('Selecciona la hora de inicio');
+    return false;
+  }
 
-    if (_fechaFin == null) {
-      _mostrarError('Selecciona la fecha de fin');
-      return false;
-    }
+  if (_fechaFin == null) {
+    _mostrarError('Selecciona la fecha de fin');
+    return false;
+  }
 
-    if (_horaFin == null) {
-      _mostrarError('Selecciona la hora de fin');
-      return false;
-    }
+  if (_horaFin == null) {
+    _mostrarError('Selecciona la hora de fin');
+    return false;
+  }
 
-    final fechaInicioCompleta = DateTime(
-      _fechaInicio!.year,
-      _fechaInicio!.month,
-      _fechaInicio!.day,
-      _horaInicio!.hour,
-      _horaInicio!.minute,
-    );
+  // Use TimezoneUtils instead of DateTime
+  final fechaInicioCompleta = TimezoneUtils.create(
+    _fechaInicio!.year,
+    _fechaInicio!.month,
+    _fechaInicio!.day,
+    _horaInicio!.hour,
+    _horaInicio!.minute,
+  );
 
-    final fechaFinCompleta = DateTime(
-      _fechaFin!.year,
-      _fechaFin!.month,
-      _fechaFin!.day,
-      _horaFin!.hour,
-      _horaFin!.minute,
-    );
+  final fechaFinCompleta = TimezoneUtils.create(
+    _fechaFin!.year,
+    _fechaFin!.month,
+    _fechaFin!.day,
+    _horaFin!.hour,
+    _horaFin!.minute,
+  );
 
     if (fechaFinCompleta.isBefore(fechaInicioCompleta)) {
       _mostrarError('La fecha de fin debe ser posterior a la fecha de inicio');

@@ -2,15 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:timezone/data/latest.dart' as tz; // Add this import
+import 'package:timezone/timezone.dart' as tz; // Add this import
 import 'app.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
+  // Initialize timezone database FIRST
+  tz.initializeTimeZones(); // Add this line
+  tz.setLocalLocation(tz.getLocation('America/Lima')); // Add this line
+
   // Inicializar datos locales para formateo de fechas en español
   await initializeDateFormatting('es_ES', null);
-  
+
   try {
     await Firebase.initializeApp();
   } catch (e) {

@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../services/timezone.dart';
 
 class Actividad {
   final String id;
@@ -72,16 +73,55 @@ class Actividad {
     );
   }
 
+  DateTime get fechaInicioPeruana {
+    return TimezoneUtils.toPeru(fechaInicio);
+  }
+
+  DateTime get fechaFinPeruana {
+    return TimezoneUtils.toPeru(fechaFin);
+  }
+
+  DateTime get fechaCreacionPeruana {
+    return TimezoneUtils.toPeru(fechaCreacion);
+  }
+
+  DateTime get fechaActualizacionPeruana {
+    return TimezoneUtils.toPeru(fechaActualizacion);
+  }
+
+  // Check if activity is active based on Peru time
+  bool get yaInicio {
+    final ahoraPeru = TimezoneUtils.now();
+    return ahoraPeru.isAfter(fechaInicioPeruana);
+  }
+
+  bool get yaTermino {
+    final ahoraPeru = TimezoneUtils.now();
+    return ahoraPeru.isAfter(fechaFinPeruana);
+  }
+
+  bool get estaEnCurso {
+    final ahoraPeru = TimezoneUtils.now();
+    return ahoraPeru.isAfter(fechaInicioPeruana) && ahoraPeru.isBefore(fechaFinPeruana);
+  }
+
   // Getters útiles
-  String get horaInicio => '${fechaInicio.hour.toString().padLeft(2, '0')}:${fechaInicio.minute.toString().padLeft(2, '0')}';
-  String get horaFin => '${fechaFin.hour.toString().padLeft(2, '0')}:${fechaFin.minute.toString().padLeft(2, '0')}';
+  String get horaInicio {
+    final inicio = fechaInicioPeruana;
+    return '${inicio.hour.toString().padLeft(2, '0')}:${inicio.minute.toString().padLeft(2, '0')}';
+  }
+  
+  String get horaFin {
+    final fin = fechaFinPeruana;
+    return '${fin.hour.toString().padLeft(2, '0')}:${fin.minute.toString().padLeft(2, '0')}';
+  }
   
   String get horario => '$horaInicio - $horaFin hrs.';
   
-  Duration get duracionDuration => fechaFin.difference(fechaInicio);
+  Duration get duracionDuration => fechaFinPeruana.difference(fechaInicioPeruana);
   
   String get duracion {
-    final dur = fechaFin.difference(fechaInicio);
+    final dur = fechaFinPeruana.difference(fechaInicioPeruana);
     final horas = dur.inHours;
     final minutos = dur.inMinutes % 60;
     
@@ -96,9 +136,13 @@ class Actividad {
     }
   }
   
-  bool get esElMismoDia => fechaInicio.day == fechaFin.day && 
-                           fechaInicio.month == fechaFin.month && 
-                           fechaInicio.year == fechaFin.year;
+  bool get esElMismoDia {
+    final inicioPeruana = fechaInicioPeruana;
+    final finPeruana = fechaFinPeruana;
+    return inicioPeruana.day == finPeruana.day && 
+           inicioPeruana.month == finPeruana.month && 
+           inicioPeruana.year == finPeruana.year;
+  }
 
   @override
   String toString() {

@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/actividad.dart';
+import '../services/timezone.dart';
 
 class ActividadesService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -41,11 +42,12 @@ class ActividadesService {
       final Map<DateTime, List<Actividad>> actividadesPorDia = {};
 
       for (final actividad in actividades) {
-        // Crear fecha sin hora para agrupar por día
+        // Use Peru timezone for grouping by day
+        final fechaPeruana = TimezoneUtils.toPeru(actividad.fechaInicio);
         final fecha = DateTime(
-          actividad.fechaInicio.year,
-          actividad.fechaInicio.month,
-          actividad.fechaInicio.day,
+          fechaPeruana.year,
+          fechaPeruana.month,
+          fechaPeruana.day,
         );
 
         if (!actividadesPorDia.containsKey(fecha)) {
@@ -65,7 +67,7 @@ class ActividadesService {
   Future<bool> actualizarActividad(Actividad actividad) async {
     try {
       final actividadActualizada = actividad.copyWith(
-        fechaActualizacion: DateTime.now(),
+        fechaActualizacion: TimezoneUtils.now(), // Use Peru timezone
       );
 
       await _firestore

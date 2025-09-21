@@ -7,6 +7,7 @@ import '../../viewmodels/eventos_viewmodel.dart';
 import '../../viewmodels/auth_viewmodel.dart';
 import '../../services/validador_service.dart';
 import '../../services/imgbb_service.dart';
+import '../../services/timezone.dart';
 
 class CrearEventoPage extends StatefulWidget {
   const CrearEventoPage({super.key});
@@ -476,13 +477,12 @@ class _CrearEventoPageState extends State<CrearEventoPage> {
       }
     }
   }
-
   Future<void> _seleccionarFecha(BuildContext context, bool esInicio) async {
     final fechaSeleccionada = await showDatePicker(
       context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime.now(),
-      lastDate: DateTime.now().add(const Duration(days: 365)),
+      initialDate: TimezoneUtils.today(),
+      firstDate: TimezoneUtils.today(),
+      lastDate: TimezoneUtils.today().add(const Duration(days: 365)),
     );
 
     if (fechaSeleccionada != null) {
@@ -513,6 +513,7 @@ class _CrearEventoPageState extends State<CrearEventoPage> {
     }
   }
 
+  // Replace the _crearEvento method
   Future<void> _crearEvento() async {
     if (!_validarFormulario()) return;
 
@@ -530,13 +531,11 @@ class _CrearEventoPageState extends State<CrearEventoPage> {
     String? imagenUrl;
     if (_imagenSeleccionada != null) {
       imagenUrl = await _subirImagenSiEsNecesario();
-      if (imagenUrl == null) {
-        // Error al subir imagen, no continuar
-        return;
-      }
+      if (imagenUrl == null) return;
     }
 
-    final fechaInicioCompleta = DateTime(
+    // Usar TimezoneUtils
+    final fechaInicioCompleta = TimezoneUtils.create(
       _fechaInicio!.year,
       _fechaInicio!.month,
       _fechaInicio!.day,
@@ -544,7 +543,7 @@ class _CrearEventoPageState extends State<CrearEventoPage> {
       _horaInicio!.minute,
     );
 
-    final fechaFinCompleta = DateTime(
+    final fechaFinCompleta = TimezoneUtils.create(
       _fechaFin!.year,
       _fechaFin!.month,
       _fechaFin!.day,
@@ -561,11 +560,11 @@ class _CrearEventoPageState extends State<CrearEventoPage> {
       fechaInicio: fechaInicioCompleta,
       fechaFin: fechaFinCompleta,
       lugar: _lugarController.text.trim(),
-      imagenUrl: imagenUrl ?? '', // Usar la URL de la imagen subida o cadena vacía
+      imagenUrl: imagenUrl ?? '',
       creadoPor: currentUser.username,
       estado: 'activo',
-      fechaCreacion: DateTime.now(),
-      fechaActualizacion: DateTime.now(),
+      fechaCreacion: TimezoneUtils.now(),
+      fechaActualizacion: TimezoneUtils.now(),
     );
 
     final eventosViewModel = Provider.of<EventosViewModel>(context, listen: false);
@@ -583,6 +582,7 @@ class _CrearEventoPageState extends State<CrearEventoPage> {
     }
   }
 
+  // Replace the _validarFormulario method
   bool _validarFormulario() {
     if (!_formKey.currentState!.validate()) return false;
 
@@ -606,7 +606,7 @@ class _CrearEventoPageState extends State<CrearEventoPage> {
       return false;
     }
 
-    final fechaInicioCompleta = DateTime(
+    final fechaInicioCompleta = TimezoneUtils.create(
       _fechaInicio!.year,
       _fechaInicio!.month,
       _fechaInicio!.day,
@@ -614,7 +614,7 @@ class _CrearEventoPageState extends State<CrearEventoPage> {
       _horaInicio!.minute,
     );
 
-    final fechaFinCompleta = DateTime(
+    final fechaFinCompleta = TimezoneUtils.create(
       _fechaFin!.year,
       _fechaFin!.month,
       _fechaFin!.day,

@@ -4,6 +4,7 @@ import '../../models/evento.dart';
 import '../../models/actividad.dart';
 import '../../models/zona.dart';
 import '../../viewmodels/actividades_viewmodel.dart';
+import '../../services/timezone.dart';
 
 class CrearActividadPage extends StatefulWidget {
   final Evento evento;
@@ -417,7 +418,8 @@ class _CrearActividadPageState extends State<CrearActividadPage> {
     });
 
     try {
-      final fechaInicio = DateTime(
+      // Use TimezoneUtils instead of direct timezone calls
+      final fechaInicio = TimezoneUtils.create(
         _fechaSeleccionada!.year,
         _fechaSeleccionada!.month,
         _fechaSeleccionada!.day,
@@ -425,7 +427,7 @@ class _CrearActividadPageState extends State<CrearActividadPage> {
         _horaInicioSeleccionada!.minute,
       );
 
-      final fechaFin = DateTime(
+      final fechaFin = TimezoneUtils.create(
         _fechaSeleccionada!.year,
         _fechaSeleccionada!.month,
         _fechaSeleccionada!.day,
@@ -460,6 +462,7 @@ class _CrearActividadPageState extends State<CrearActividadPage> {
         );
         exito = await viewModel.actualizarActividad(actividadActualizada);
       } else {
+        // Use TimezoneUtils for current time
         final nuevaActividad = Actividad(
           id: '',
           nombre: _nombreController.text.trim(),
@@ -467,8 +470,8 @@ class _CrearActividadPageState extends State<CrearActividadPage> {
           fechaFin: fechaFin,
           zona: _zonaSeleccionada!,
           eventoId: widget.evento.id,
-          fechaCreacion: DateTime.now(),
-          fechaActualizacion: DateTime.now(),
+          fechaCreacion: TimezoneUtils.now(),
+          fechaActualizacion: TimezoneUtils.now(),
         );
         exito = await viewModel.crearActividad(nuevaActividad);
       }
