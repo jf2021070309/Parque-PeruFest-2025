@@ -5,6 +5,7 @@ import '../viewmodels/eventos_viewmodel.dart';
 import '../viewmodels/auth_viewmodel.dart';
 import 'visitante/actividades_evento_view.dart';
 import 'visitante/perfil_visitante_view.dart';
+import 'visitante/mapa_view.dart';
 
 class DashboardUserView extends StatefulWidget {
   const DashboardUserView({super.key});
@@ -63,6 +64,7 @@ class _DashboardUserViewState extends State<DashboardUserView> {
         },
         children: [
           _buildEventosPage(),
+          _buildMapaPage(),
           _buildPerfilPage(),
         ],
       ),
@@ -424,6 +426,10 @@ class _DashboardUserViewState extends State<DashboardUserView> {
     return const PerfilVisitanteView();
   }
 
+  Widget _buildMapaPage() {
+    return const MapaView();
+  }
+
   Widget _buildBottomNavigation() {
     return Container(
       decoration: BoxDecoration(
@@ -438,7 +444,7 @@ class _DashboardUserViewState extends State<DashboardUserView> {
       child: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: (index) {
-          if (index == 2) {
+          if (index == 3) {
             _mostrarMenuCerrarSesion();
             return;
           }
@@ -462,6 +468,11 @@ class _DashboardUserViewState extends State<DashboardUserView> {
             icon: Icon(Icons.celebration),
             activeIcon: Icon(Icons.celebration),
             label: 'Eventos',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.map_outlined),
+            activeIcon: Icon(Icons.map),
+            label: 'Mapa',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person_outline),

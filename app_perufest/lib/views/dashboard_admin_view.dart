@@ -4,6 +4,7 @@ import 'admin/noticias_page.dart';
 import 'admin/eventos_page.dart';
 import 'admin/actividades_page.dart';
 import 'admin/estadisticas_page.dart';
+import 'admin/mapa_admin_view.dart';
 import '../viewmodels/auth_viewmodel.dart';
 
 class DashboardAdminView extends StatefulWidget {
@@ -21,6 +22,7 @@ class _DashboardAdminViewState extends State<DashboardAdminView> {
     const NoticiasPage(),
     const EventosPage(),
     const ActividadesPage(),
+    const MapaAdminView(),
     const EstadisticasPage(),
   ];
 
@@ -88,6 +90,10 @@ class _DashboardAdminViewState extends State<DashboardAdminView> {
           BottomNavigationBarItem(
             icon: Icon(Icons.local_activity),
             label: 'Actividades',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.map),
+            label: 'Zonas',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.bar_chart),
