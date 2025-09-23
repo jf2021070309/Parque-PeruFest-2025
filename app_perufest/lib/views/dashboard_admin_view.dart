@@ -5,6 +5,7 @@ import 'admin/eventos_page.dart';
 import 'admin/actividades_page.dart';
 import 'admin/estadisticas_page.dart';
 import 'admin/mapa_admin_view.dart';
+import 'perfil_administrador_view.dart';
 import '../viewmodels/auth_viewmodel.dart';
 
 class DashboardAdminView extends StatefulWidget {
@@ -26,6 +27,25 @@ class _DashboardAdminViewState extends State<DashboardAdminView> {
     const EstadisticasPage(),
   ];
 
+  Widget _buildPerfilPage() {
+    final authViewModel = context.watch<AuthViewModel>();
+    final currentUser = authViewModel.currentUser;
+
+    if (currentUser == null) {
+      return const Center(child: Text('Error: Usuario no encontrado'));
+    }
+
+    return PerfilAdministradorView(
+      userId: currentUser.id,
+      userData: {
+        'username': currentUser.username,
+        'email': currentUser.correo,
+        'telefono': currentUser.telefono,
+        'rol': currentUser.rol,
+      },
+    );
+  }
+
   void _onTabTapped(int index) {
     setState(() {
       _currentIndex = index;
@@ -35,26 +55,30 @@ class _DashboardAdminViewState extends State<DashboardAdminView> {
   void _cerrarSesion() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Cerrar Sesión'),
-        content: const Text('¿Estás seguro de que quieres cerrar sesión?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Cerrar Sesión'),
+            content: const Text('¿Estás seguro de que quieres cerrar sesión?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancelar'),
+              ),
+              TextButton(
+                onPressed: () {
+                  // Usar tu método logout existente
+                  context.read<AuthViewModel>().logout();
+                  Navigator.pop(context);
+                  // Navegar al login
+                  Navigator.pushReplacementNamed(context, '/login');
+                },
+                child: const Text(
+                  'Cerrar Sesión',
+                  style: TextStyle(color: Colors.red),
+                ),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () {
-              // Usar tu método logout existente
-              context.read<AuthViewModel>().logout();
-              Navigator.pop(context);
-              // Navegar al login
-              Navigator.pushReplacementNamed(context, '/login');
-            },
-            child: const Text('Cerrar Sesión', style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
     );
   }
 
@@ -72,33 +96,27 @@ class _DashboardAdminViewState extends State<DashboardAdminView> {
         ],
       ),
       body: SafeArea(
-        child: _pages[_currentIndex],
+        child: _currentIndex == 5 ? _buildPerfilPage() : _pages[_currentIndex],
       ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         currentIndex: _currentIndex,
         onTap: _onTabTapped,
+        selectedItemColor: const Color(0xFF8B1B1B),
+        unselectedItemColor: Colors.grey.shade600,
         items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.article),
-            label: 'Noticias',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.event),
-            label: 'Eventos',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.article), label: 'Noticias'),
+          BottomNavigationBarItem(icon: Icon(Icons.event), label: 'Eventos'),
           BottomNavigationBarItem(
             icon: Icon(Icons.local_activity),
             label: 'Actividades',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.map),
-            label: 'Zonas',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.map), label: 'Zonas'),
           BottomNavigationBarItem(
             icon: Icon(Icons.bar_chart),
             label: 'Estadísticas',
           ),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Perfil'),
         ],
       ),
     );

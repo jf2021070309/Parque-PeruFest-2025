@@ -39,22 +39,30 @@ class _MapaViewState extends State<MapaView> {
     _cargarEventos();
   }
 
+  @override
+  void dispose() {
+    _mapController.dispose();
+    super.dispose();
+  }
+
   Future<void> _cargarEventos() async {
     try {
       final eventos = await EventosService.obtenerEventos();
-      setState(() {
-        _eventos = eventos.where((e) => e.estaActivo).toList();
-        _eventoSeleccionado = _eventos.isNotEmpty ? _eventos.first : null;
-        _cargando = false;
-      });
+      if (mounted) {
+        setState(() {
+          _eventos = eventos.where((e) => e.estaActivo).toList();
+          _eventoSeleccionado = _eventos.isNotEmpty ? _eventos.first : null;
+          _cargando = false;
+        });
+      }
       if (_eventoSeleccionado != null) {
         await _cargarZonasDeEvento(_eventoSeleccionado!.id);
       }
     } catch (e) {
-      setState(() {
-        _cargando = false;
-      });
       if (mounted) {
+        setState(() {
+          _cargando = false;
+        });
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Error al cargar los eventos'),
@@ -73,9 +81,11 @@ class _MapaViewState extends State<MapaView> {
       for (var zona in zonas) {
         debugPrint('Zona: ${zona.nombre} en (${zona.ubicacion.latitude}, ${zona.ubicacion.longitude})');
       }
-      setState(() {
-        _zonas = zonas;
-      });
+      if (mounted) {
+        setState(() {
+          _zonas = zonas;
+        });
+      }
     } catch (e) {
       debugPrint('Error al cargar zonas: $e');
       if (mounted) {
@@ -198,15 +208,19 @@ class _MapaViewState extends State<MapaView> {
                       );
                     }).toList(),
                     onChanged: (Evento? evento) {
-                      setState(() {
-                        _eventoSeleccionado = evento;
-                      });
+                      if (mounted) {
+                        setState(() {
+                          _eventoSeleccionado = evento;
+                        });
+                      }
                       if (evento != null) {
                         _cargarZonasDeEvento(evento.id);
                       } else {
-                        setState(() {
-                          _zonas = [];
-                        });
+                        if (mounted) {
+                          setState(() {
+                            _zonas = [];
+                          });
+                        }
                       }
                     },
                   ),

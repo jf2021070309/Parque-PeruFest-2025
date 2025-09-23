@@ -4,7 +4,7 @@ import '../models/evento.dart';
 import '../viewmodels/eventos_viewmodel.dart';
 import '../viewmodels/auth_viewmodel.dart';
 import 'visitante/actividades_evento_view.dart';
-import 'visitante/perfil_visitante_view.dart';
+import 'perfil_usuario_view.dart';
 import 'visitante/mapa_view.dart';
 
 class DashboardUserView extends StatefulWidget {
@@ -62,11 +62,7 @@ class _DashboardUserViewState extends State<DashboardUserView> {
             _selectedIndex = index;
           });
         },
-        children: [
-          _buildEventosPage(),
-          _buildMapaPage(),
-          _buildPerfilPage(),
-        ],
+        children: [_buildEventosPage(), _buildMapaPage(), _buildPerfilPage()],
       ),
       bottomNavigationBar: _buildBottomNavigation(),
     );
@@ -83,9 +79,7 @@ class _DashboardUserViewState extends State<DashboardUserView> {
                 child: Center(child: CircularProgressIndicator()),
               )
             else if (eventosViewModel.eventos.isEmpty)
-              SliverFillRemaining(
-                child: _buildEmptyState(),
-              )
+              SliverFillRemaining(child: _buildEmptyState())
             else
               _buildEventosList(eventosViewModel.eventos),
           ],
@@ -144,10 +138,7 @@ class _DashboardUserViewState extends State<DashboardUserView> {
                   children: [
                     Text(
                       'Bienvenido al',
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 16,
-                      ),
+                      style: TextStyle(color: Colors.white70, fontSize: 16),
                     ),
                     Text(
                       'Parque Perú',
@@ -179,14 +170,11 @@ class _DashboardUserViewState extends State<DashboardUserView> {
           mainAxisSpacing: 16.0,
           childAspectRatio: 2.2, // Aumentado de 2.0 a 2.2 para dar más altura
         ),
-        delegate: SliverChildBuilderDelegate(
-          (context, index) {
-            final evento = eventosActivos[index];
-            final color = _eventoColors[index % _eventoColors.length];
-            return _buildEventoCard(evento, color);
-          },
-          childCount: eventosActivos.length,
-        ),
+        delegate: SliverChildBuilderDelegate((context, index) {
+          final evento = eventosActivos[index];
+          final color = _eventoColors[index % _eventoColors.length];
+          return _buildEventoCard(evento, color);
+        }, childCount: eventosActivos.length),
       ),
     );
   }
@@ -194,13 +182,23 @@ class _DashboardUserViewState extends State<DashboardUserView> {
   Widget _buildEventoCard(Evento evento, Color color) {
     final now = DateTime.now();
     final hoy = DateTime(now.year, now.month, now.day);
-    final inicioEvento = DateTime(evento.fechaInicio.year, evento.fechaInicio.month, evento.fechaInicio.day);
-    final finEvento = DateTime(evento.fechaFin.year, evento.fechaFin.month, evento.fechaFin.day);
-    
+    final inicioEvento = DateTime(
+      evento.fechaInicio.year,
+      evento.fechaInicio.month,
+      evento.fechaInicio.day,
+    );
+    final finEvento = DateTime(
+      evento.fechaFin.year,
+      evento.fechaFin.month,
+      evento.fechaFin.day,
+    );
+
     String estadoTexto = '';
     Color estadoColor = color;
-    
-    if (hoy.isAtSameMomentAs(inicioEvento) || (hoy.isAfter(inicioEvento) && hoy.isBefore(finEvento)) || hoy.isAtSameMomentAs(finEvento)) {
+
+    if (hoy.isAtSameMomentAs(inicioEvento) ||
+        (hoy.isAfter(inicioEvento) && hoy.isBefore(finEvento)) ||
+        hoy.isAtSameMomentAs(finEvento)) {
       estadoTexto = 'ACTUAL';
       estadoColor = Colors.green;
     } else if (inicioEvento.isAfter(hoy)) {
@@ -210,17 +208,14 @@ class _DashboardUserViewState extends State<DashboardUserView> {
         estadoColor = Colors.orange;
       }
     }
-    
+
     return GestureDetector(
       onTap: () => _verActividadesEvento(evento),
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
           gradient: LinearGradient(
-            colors: [
-              color,
-              color.withOpacity(0.7),
-            ],
+            colors: [color, color.withOpacity(0.7)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -244,7 +239,7 @@ class _DashboardUserViewState extends State<DashboardUserView> {
                 color: Colors.white.withOpacity(0.1),
               ),
             ),
-            
+
             // Contenido principal
             Padding(
               padding: const EdgeInsets.all(24),
@@ -385,11 +380,7 @@ class _DashboardUserViewState extends State<DashboardUserView> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.event_busy,
-            size: 80,
-            color: Colors.grey.shade400,
-          ),
+          Icon(Icons.event_busy, size: 80, color: Colors.grey.shade400),
           const SizedBox(height: 16),
           Text(
             'No hay eventos disponibles',
@@ -402,9 +393,7 @@ class _DashboardUserViewState extends State<DashboardUserView> {
           const SizedBox(height: 8),
           Text(
             'Los eventos aparecerán aquí cuando estén disponibles',
-            style: TextStyle(
-              color: Colors.grey.shade500,
-            ),
+            style: TextStyle(color: Colors.grey.shade500),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 24),
@@ -423,7 +412,22 @@ class _DashboardUserViewState extends State<DashboardUserView> {
   }
 
   Widget _buildPerfilPage() {
-    return const PerfilVisitanteView();
+    final authViewModel = context.watch<AuthViewModel>();
+    final currentUser = authViewModel.currentUser;
+
+    if (currentUser == null) {
+      return const Center(child: Text('Error: Usuario no encontrado'));
+    }
+
+    return PerfilUsuarioView(
+      userId: currentUser.id,
+      userData: {
+        'username': currentUser.username,
+        'email': currentUser.correo,
+        'telefono': currentUser.telefono,
+        'rol': currentUser.rol,
+      },
+    );
   }
 
   Widget _buildMapaPage() {
@@ -448,7 +452,7 @@ class _DashboardUserViewState extends State<DashboardUserView> {
             _mostrarMenuCerrarSesion();
             return;
           }
-          
+
           setState(() {
             _selectedIndex = index;
           });
@@ -495,106 +499,94 @@ class _DashboardUserViewState extends State<DashboardUserView> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.grey.shade300,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 20),
-            Icon(
-              Icons.logout,
-              size: 48,
-              color: Colors.red.shade400,
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              '¿Cerrar Sesión?',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Se cerrará tu sesión y regresarás a la pantalla de inicio',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.grey.shade600,
-              ),
-            ),
-            const SizedBox(height: 24),
-            Row(
+      builder:
+          (context) => Container(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.pop(context),
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    child: const Text('Cancelar'),
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(2),
                   ),
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                      _cerrarSesion();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red.shade400,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                const SizedBox(height: 20),
+                Icon(Icons.logout, size: 48, color: Colors.red.shade400),
+                const SizedBox(height: 16),
+                const Text(
+                  '¿Cerrar Sesión?',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Se cerrará tu sesión y regresarás a la pantalla de inicio',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.grey.shade600),
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(context),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        child: const Text('Cancelar'),
                       ),
                     ),
-                    child: const Text('Cerrar Sesión'),
-                  ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          _cerrarSesion();
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red.shade400,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        child: const Text('Cerrar Sesión'),
+                      ),
+                    ),
+                  ],
                 ),
+                const SizedBox(height: 20),
               ],
             ),
-            const SizedBox(height: 20),
-          ],
-        ),
-      ),
+          ),
     );
   }
 
   void _cerrarSesion() async {
     final authViewModel = context.read<AuthViewModel>();
     authViewModel.logout();
-    
+
     if (context.mounted) {
-      Navigator.of(context).pushNamedAndRemoveUntil(
-        '/login',
-        (route) => false,
-      );
+      Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
     }
   }
 
   void _verActividadesEvento(Evento evento) {
     final authViewModel = context.read<AuthViewModel>();
     final currentUserId = authViewModel.currentUser?.id ?? '';
-    
+
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => ActividadesEventoView(
-          evento: evento, 
-          userId: currentUserId,
-        ),
+        builder:
+            (context) =>
+                ActividadesEventoView(evento: evento, userId: currentUserId),
       ),
     );
   }
