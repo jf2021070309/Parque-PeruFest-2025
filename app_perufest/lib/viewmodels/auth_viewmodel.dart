@@ -102,6 +102,26 @@ class AuthViewModel extends ChangeNotifier {
     }
   }
 
+  // Método para actualizar los datos del usuario actual
+  Future<void> actualizarUsuario() async {
+    if (_currentUser == null) return;
+
+    try {
+      final usuarioActualizado = await FirestoreService.obtenerUsuarioPorId(_currentUser!.id);
+      if (usuarioActualizado != null) {
+        _currentUser = usuarioActualizado;
+        notifyListeners();
+        if (kDebugMode) {
+          debugPrint('Datos del usuario actualizados: ${usuarioActualizado.nombre}');
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('Error al actualizar datos del usuario: $e');
+      }
+    }
+  }
+
   void resetState() {
     _setState(AuthState.idle);
   }

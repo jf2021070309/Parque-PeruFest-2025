@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
+import 'package:provider/provider.dart';
 import '../services/perfil_service.dart';
+import '../services/imgbb_service.dart';
+import '../viewmodels/auth_viewmodel.dart';
 
 class PerfilExpositorView extends StatefulWidget {
   final String userId;
@@ -31,6 +36,12 @@ class _PerfilExpositorViewState extends State<PerfilExpositorView> {
   bool _isLoading = false;
   bool _isEditing = false;
   Map<String, String> redesSociales = {};
+
+  // Variables para manejo de imagen de perfil
+  File? _nuevaImagenPerfil;
+  String? _urlImagenPerfil;
+  bool _subiendoImagen = false;
+  final ImagePicker _picker = ImagePicker();
 
   // Opciones de redes sociales disponibles
   final List<Map<String, dynamic>> opcionesRedes = [
@@ -82,8 +93,55 @@ class _PerfilExpositorViewState extends State<PerfilExpositorView> {
       final redes =
           widget.userData['redes_sociales'] as Map<String, dynamic>? ?? {};
       redesSociales = Map<String, String>.from(redes);
+      
+      // Imagen de perfil
+      _urlImagenPerfil = widget.userData['imagenPerfil'];
+      
+      // Cargar datos más actuales desde Firebase
+      _cargarDatosActuales();
     } catch (e) {
       print('Error inicializando controladores: $e');
+    }
+  }
+  
+  // Método para cargar los datos más actuales desde Firebase
+  Future<void> _cargarDatosActuales() async {
+    try {
+      final db = FirebaseFirestore.instance;
+      final userDoc = await db.collection('usuarios').doc(widget.userId).get();
+
+      if (userDoc.exists) {
+        final datosActualizados = userDoc.data() as Map<String, dynamic>;
+
+        setState(() {
+          _usuarioController.text =
+              datosActualizados['username']?.toString() ??
+              datosActualizados['usuario']?.toString() ??
+              '';
+          _celularController.text =
+              datosActualizados['telefono']?.toString() ??
+              datosActualizados['celular']?.toString() ??
+              '';
+          
+          // Actualizar datos de empresa
+          final empresa =
+              datosActualizados['empresa'] as Map<String, dynamic>? ?? {};
+          _nombreEmpresaController.text = empresa['nombre']?.toString() ?? '';
+          _descripcionEmpresaController.text =
+              empresa['descripcion']?.toString() ?? '';
+
+          // Actualizar redes sociales
+          final redes =
+              datosActualizados['redes_sociales'] as Map<String, dynamic>? ??
+              {};
+          redesSociales = Map<String, String>.from(redes);
+          
+          // Actualizar la imagen de perfil con los datos más recientes
+          _urlImagenPerfil = datosActualizados['imagenPerfil'];
+        });
+      }
+    } catch (e) {
+      print('Error cargando datos actuales: $e');
     }
   }
 
@@ -209,6 +267,147 @@ class _PerfilExpositorViewState extends State<PerfilExpositorView> {
     );
   }
 
+  // Método para mostrar opciones de selección de imagen
+  Future<void> _mostrarOpcionesImagen() async {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => SafeArea(
+        child: Wrap(
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_library, color: Color(0xFF8B1B1B)),
+              title: const Text('Galería'),
+              onTap: () {
+                Navigator.pop(context);
+                _seleccionarImagen(ImageSource.gallery);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.camera_alt, color: Colors.green),
+              title: const Text('Cámara'),
+              onTap: () {
+                Navigator.pop(context);
+                _seleccionarImagen(ImageSource.camera);
+              },
+            ),
+            if (_urlImagenPerfil != null)
+              ListTile(
+                leading: const Icon(Icons.delete, color: Colors.red),
+                title: const Text('Eliminar imagen'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _eliminarImagenPerfil();
+                },
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Método para seleccionar imagen de galería o cámara
+  Future<void> _seleccionarImagen(ImageSource source) async {
+    try {
+      final XFile? imagen = await _picker.pickImage(
+        source: source,
+        maxWidth: 512,
+        maxHeight: 512,
+        imageQuality: 80,
+      );
+
+      if (imagen != null) {
+        setState(() {
+          _nuevaImagenPerfil = File(imagen.path);
+        });
+        await _subirImagenPerfil();
+      }
+    } catch (e) {
+      _mostrarMensaje('Error al seleccionar imagen: $e');
+    }
+  }
+
+  // Método para subir imagen a ImgBB y actualizar perfil
+  Future<void> _subirImagenPerfil() async {
+    if (_nuevaImagenPerfil == null) return;
+
+    setState(() => _subiendoImagen = true);
+
+    try {
+      // Subir imagen a ImgBB
+      final urlImagen = await ImgBBService.subirImagenPerfil(
+        _nuevaImagenPerfil!,
+        widget.userId,
+      );
+
+      if (urlImagen != null) {
+        // Actualizar en Firestore
+        final success = await PerfilService.actualizarImagenPerfil(
+          widget.userId,
+          urlImagen,
+        );
+
+        if (success) {
+          setState(() {
+            _urlImagenPerfil = urlImagen;
+            _nuevaImagenPerfil = null;
+          });
+
+          // Actualizar el AuthViewModel para reflejar los cambios
+          if (mounted) {
+            final authViewModel = context.read<AuthViewModel>();
+            await authViewModel.actualizarUsuario();
+          }
+
+          _mostrarMensaje('Imagen de perfil actualizada', esError: false);
+        } else {
+          throw Exception('Error al guardar en la base de datos');
+        }
+      } else {
+        throw Exception('Error al subir la imagen');
+      }
+    } catch (e) {
+      _mostrarMensaje('Error: $e');
+    } finally {
+      setState(() => _subiendoImagen = false);
+    }
+  }
+
+  // Método para eliminar imagen de perfil
+  Future<void> _eliminarImagenPerfil() async {
+    setState(() => _subiendoImagen = true);
+
+    try {
+      final success = await PerfilService.actualizarImagenPerfil(
+        widget.userId,
+        '', // Pasar string vacío para eliminar
+      );
+
+      if (success) {
+        setState(() {
+          _urlImagenPerfil = null;
+          _nuevaImagenPerfil = null;
+        });
+
+        // Actualizar el AuthViewModel para reflejar los cambios
+        if (mounted) {
+          final authViewModel = context.read<AuthViewModel>();
+          await authViewModel.actualizarUsuario();
+        }
+
+        _mostrarMensaje('Imagen de perfil eliminada', esError: false);
+      } else {
+        throw Exception('Error al eliminar de la base de datos');
+      }
+    } catch (e) {
+      _mostrarMensaje('Error: $e');
+    } finally {
+      setState(() => _subiendoImagen = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -286,6 +485,77 @@ class _PerfilExpositorViewState extends State<PerfilExpositorView> {
               ],
             ),
             const SizedBox(height: 16),
+            
+            // Avatar con imagen de perfil
+            Center(
+              child: Stack(
+                children: [
+                  // Avatar con imagen o inicial
+                  CircleAvatar(
+                    radius: 40,
+                    backgroundColor: Colors.grey[200],
+                    backgroundImage: (_nuevaImagenPerfil != null)
+                        ? FileImage(_nuevaImagenPerfil!)
+                        : (_urlImagenPerfil != null && _urlImagenPerfil!.isNotEmpty)
+                            ? NetworkImage(_urlImagenPerfil!)
+                            : null,
+                    child: (_nuevaImagenPerfil == null && 
+                           (_urlImagenPerfil == null || _urlImagenPerfil!.isEmpty))
+                        ? Text(
+                            (_usuarioController.text.isNotEmpty
+                                    ? _usuarioController.text
+                                    : 'E')
+                                .toString()
+                                .toUpperCase()[0],
+                            style: const TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF8B1B1B),
+                            ),
+                          )
+                        : null,
+                  ),
+                  
+                  // Indicador de carga y botón de editar
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: GestureDetector(
+                      onTap: _subiendoImagen ? null : _mostrarOpcionesImagen,
+                      child: Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF8B1B1B),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: Colors.white,
+                            width: 2,
+                          ),
+                        ),
+                        child: _subiendoImagen
+                            ? const SizedBox(
+                                width: 12,
+                                height: 12,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.white,
+                                  ),
+                                ),
+                              )
+                            : const Icon(
+                                Icons.camera_alt,
+                                color: Colors.white,
+                                size: 12,
+                              ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+            
             TextFormField(
               controller: _usuarioController,
               enabled: _isEditing,
@@ -671,6 +941,9 @@ class _PerfilExpositorViewState extends State<PerfilExpositorView> {
               datosActualizados['redes_sociales'] as Map<String, dynamic>? ??
               {};
           redesSociales = Map<String, String>.from(redes);
+          
+          // Actualizar imagen de perfil
+          _urlImagenPerfil = datosActualizados['imagenPerfil'];
         });
       }
     } catch (e) {

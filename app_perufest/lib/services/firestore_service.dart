@@ -47,6 +47,22 @@ class FirestoreService {
     return query.docs.isNotEmpty;
   }
 
+  // Método para obtener usuario por ID
+  static Future<Usuario?> obtenerUsuarioPorId(String userId) async {
+    try {
+      final doc = await _usuarios.doc(userId).get();
+      if (doc.exists) {
+        final data = doc.data()!;
+        data['id'] = doc.id;
+        return Usuario.fromJson(data);
+      }
+      return null;
+    } catch (e) {
+      print('Error al obtener usuario por ID: $e');
+      return null;
+    }
+  }
+
   // Método para limpiar el campo password de un usuario
   static Future<void> limpiarCampoPassword(String correo) async {
     print('🧹 Limpiando campo password para: $correo');

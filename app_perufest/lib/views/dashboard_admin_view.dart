@@ -42,6 +42,7 @@ class _DashboardAdminViewState extends State<DashboardAdminView> {
         'email': currentUser.correo,
         'telefono': currentUser.telefono,
         'rol': currentUser.rol,
+        'imagenPerfil': currentUser.imagenPerfil,
       },
     );
   }

@@ -6,6 +6,7 @@ class Usuario {
   final String telefono;
   final String rol;
   final String contrasena;
+  final String? imagenPerfil;
 
   Usuario({
     required this.id,
@@ -15,6 +16,7 @@ class Usuario {
     required this.telefono,
     required this.rol,
     required this.contrasena,
+    this.imagenPerfil,
   });
 
   factory Usuario.fromJson(Map<String, dynamic> json) {
@@ -26,6 +28,7 @@ class Usuario {
       telefono: json['telefono'] ?? '',
       rol: json['rol'] ?? 'usuario',
       contrasena: json['contrasena'] ?? '',
+      imagenPerfil: json['imagenPerfil'],
     );
   }
 
@@ -37,6 +40,7 @@ class Usuario {
       'telefono': telefono,
       'rol': rol,
       'contrasena': contrasena,
+      'imagenPerfil': imagenPerfil,
     };
   }
 

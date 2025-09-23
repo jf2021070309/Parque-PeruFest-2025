@@ -97,6 +97,26 @@ class PerfilService {
     }
   }
 
+  // Actualizar imagen de perfil del usuario
+  static Future<bool> actualizarImagenPerfil(
+    String userId,
+    String urlImagen,
+  ) async {
+    try {
+      if (urlImagen.isEmpty) {
+        // Si la URL está vacía, eliminar el campo
+        await _usuarios.doc(userId).update({'imagenPerfil': FieldValue.delete()});
+      } else {
+        // Actualizar con la nueva URL
+        await _usuarios.doc(userId).update({'imagenPerfil': urlImagen});
+      }
+      return true;
+    } catch (e) {
+      print('Error al actualizar imagen de perfil: $e');
+      return false;
+    }
+  }
+
   // Método para limpiar campos duplicados existentes
   static Future<bool> limpiarCamposDuplicados(String userId) async {
     try {

@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
+import 'package:provider/provider.dart';
 import '../services/perfil_service.dart';
+import '../services/imgbb_service.dart';
+import '../viewmodels/auth_viewmodel.dart';
 
 class PerfilUsuarioView extends StatefulWidget {
   final String userId;
@@ -23,6 +28,12 @@ class _PerfilUsuarioViewState extends State<PerfilUsuarioView> {
   late TextEditingController _celularController;
   bool _isLoading = false;
   bool _isEditing = false;
+  
+  // Variables para manejo de imagen de perfil
+  File? _nuevaImagenPerfil;
+  String? _urlImagenPerfil;
+  bool _subiendoImagen = false;
+  final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
@@ -36,6 +47,39 @@ class _PerfilUsuarioViewState extends State<PerfilUsuarioView> {
     _celularController = TextEditingController(
       text: widget.userData['telefono'] ?? widget.userData['celular'] ?? '',
     );
+    
+    // Inicializar URL de imagen de perfil
+    _urlImagenPerfil = widget.userData['imagenPerfil'];
+    
+    // Cargar datos más actuales desde Firebase
+    _cargarDatosActuales();
+  }
+  
+  // Método para cargar los datos más actuales desde Firebase
+  Future<void> _cargarDatosActuales() async {
+    try {
+      final db = FirebaseFirestore.instance;
+      final userDoc = await db.collection('usuarios').doc(widget.userId).get();
+
+      if (userDoc.exists) {
+        final datosActualizados = userDoc.data() as Map<String, dynamic>;
+
+        setState(() {
+          _usuarioController.text =
+              datosActualizados['username']?.toString() ??
+              datosActualizados['usuario']?.toString() ??
+              '';
+          _celularController.text =
+              datosActualizados['telefono']?.toString() ??
+              datosActualizados['celular']?.toString() ??
+              '';
+          // Actualizar la imagen de perfil con los datos más recientes
+          _urlImagenPerfil = datosActualizados['imagenPerfil'];
+        });
+      }
+    } catch (e) {
+      print('Error cargando datos actuales: $e');
+    }
   }
 
   @override
@@ -44,6 +88,172 @@ class _PerfilUsuarioViewState extends State<PerfilUsuarioView> {
     _usuarioController.dispose();
     _celularController.dispose();
     super.dispose();
+  }
+
+  // Método para mostrar opciones de selección de imagen
+  Future<void> _mostrarOpcionesImagen() async {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => SafeArea(
+        child: Wrap(
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_library, color: Colors.blue),
+              title: const Text('Galería'),
+              onTap: () {
+                Navigator.pop(context);
+                _seleccionarImagen(ImageSource.gallery);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.camera_alt, color: Colors.green),
+              title: const Text('Cámara'),
+              onTap: () {
+                Navigator.pop(context);
+                _seleccionarImagen(ImageSource.camera);
+              },
+            ),
+            if (_urlImagenPerfil != null)
+              ListTile(
+                leading: const Icon(Icons.delete, color: Colors.red),
+                title: const Text('Eliminar imagen'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _eliminarImagenPerfil();
+                },
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Método para seleccionar imagen de galería o cámara
+  Future<void> _seleccionarImagen(ImageSource source) async {
+    try {
+      final XFile? imagen = await _picker.pickImage(
+        source: source,
+        maxWidth: 512,
+        maxHeight: 512,
+        imageQuality: 80,
+      );
+
+      if (imagen != null) {
+        setState(() {
+          _nuevaImagenPerfil = File(imagen.path);
+        });
+        await _subirImagenPerfil();
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error al seleccionar imagen: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  // Método para subir imagen a ImgBB y actualizar perfil
+  Future<void> _subirImagenPerfil() async {
+    if (_nuevaImagenPerfil == null) return;
+
+    setState(() => _subiendoImagen = true);
+
+    try {
+      // Subir imagen a ImgBB
+      final urlImagen = await ImgBBService.subirImagenPerfil(
+        _nuevaImagenPerfil!,
+        widget.userId,
+      );
+
+      if (urlImagen != null) {
+        // Actualizar en Firestore
+        final success = await PerfilService.actualizarImagenPerfil(
+          widget.userId,
+          urlImagen,
+        );
+
+        if (success) {
+          setState(() {
+            _urlImagenPerfil = urlImagen;
+            _nuevaImagenPerfil = null;
+          });
+
+          // Actualizar el AuthViewModel para reflejar los cambios
+          if (mounted) {
+            final authViewModel = context.read<AuthViewModel>();
+            await authViewModel.actualizarUsuario();
+          }
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('✅ Imagen de perfil actualizada'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        } else {
+          throw Exception('Error al guardar en la base de datos');
+        }
+      } else {
+        throw Exception('Error al subir la imagen');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('❌ Error: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      setState(() => _subiendoImagen = false);
+    }
+  }
+
+  // Método para eliminar imagen de perfil
+  Future<void> _eliminarImagenPerfil() async {
+    setState(() => _subiendoImagen = true);
+
+    try {
+      final success = await PerfilService.actualizarImagenPerfil(
+        widget.userId,
+        '', // Pasar string vacío para eliminar
+      );
+
+      if (success) {
+        setState(() {
+          _urlImagenPerfil = null;
+          _nuevaImagenPerfil = null;
+        });
+
+        // Actualizar el AuthViewModel para reflejar los cambios
+        if (mounted) {
+          final authViewModel = context.read<AuthViewModel>();
+          await authViewModel.actualizarUsuario();
+        }
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('✅ Imagen de perfil eliminada'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else {
+        throw Exception('Error al eliminar de la base de datos');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('❌ Error: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      setState(() => _subiendoImagen = false);
+    }
   }
 
   Future<void> _guardarCambios() async {
@@ -198,21 +408,70 @@ class _PerfilUsuarioViewState extends State<PerfilUsuarioView> {
                 ),
                 child: Column(
                   children: [
-                    CircleAvatar(
-                      radius: 50,
-                      backgroundColor: Colors.white,
-                      child: Text(
-                        (_usuarioController.text.isNotEmpty
-                                ? _usuarioController.text
-                                : 'U')
-                            .toString()
-                            .toUpperCase()[0],
-                        style: const TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.blue,
+                    Stack(
+                      children: [
+                        // Avatar con imagen o inicial
+                        CircleAvatar(
+                          radius: 50,
+                          backgroundColor: Colors.white,
+                          backgroundImage: (_nuevaImagenPerfil != null)
+                              ? FileImage(_nuevaImagenPerfil!)
+                              : (_urlImagenPerfil != null && _urlImagenPerfil!.isNotEmpty)
+                                  ? NetworkImage(_urlImagenPerfil!)
+                                  : null,
+                          child: (_nuevaImagenPerfil == null && 
+                                 (_urlImagenPerfil == null || _urlImagenPerfil!.isEmpty))
+                              ? Text(
+                                  (_usuarioController.text.isNotEmpty
+                                          ? _usuarioController.text
+                                          : 'U')
+                                      .toString()
+                                      .toUpperCase()[0],
+                                  style: const TextStyle(
+                                    fontSize: 32,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.blue,
+                                  ),
+                                )
+                              : null,
                         ),
-                      ),
+                        
+                        // Indicador de carga y botón de editar
+                        Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: GestureDetector(
+                            onTap: _subiendoImagen ? null : _mostrarOpcionesImagen,
+                            child: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Colors.blue,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.white,
+                                  width: 2,
+                                ),
+                              ),
+                              child: _subiendoImagen
+                                  ? const SizedBox(
+                                      width: 16,
+                                      height: 16,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor: AlwaysStoppedAnimation<Color>(
+                                          Colors.white,
+                                        ),
+                                      ),
+                                    )
+                                  : const Icon(
+                                      Icons.camera_alt,
+                                      color: Colors.white,
+                                      size: 16,
+                                    ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 16),
                     Text(
@@ -368,6 +627,7 @@ class _PerfilUsuarioViewState extends State<PerfilUsuarioView> {
               datosActualizados['telefono']?.toString() ??
               datosActualizados['celular']?.toString() ??
               '';
+          _urlImagenPerfil = datosActualizados['imagenPerfil'];
         });
       }
     } catch (e) {
