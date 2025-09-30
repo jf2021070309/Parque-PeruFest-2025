@@ -6,6 +6,7 @@ import '../viewmodels/auth_viewmodel.dart';
 import 'visitante/actividades_evento_view.dart';
 import 'perfil_usuario_view.dart';
 import 'visitante/mapa_view.dart';
+import 'agenda_usuario_view.dart';
 
 class DashboardUserView extends StatefulWidget {
   const DashboardUserView({super.key});
@@ -62,7 +63,7 @@ class _DashboardUserViewState extends State<DashboardUserView> {
             _selectedIndex = index;
           });
         },
-        children: [_buildEventosPage(), _buildMapaPage(), _buildPerfilPage()],
+        children: [_buildEventosPage(), _buildMapaPage(), _buildAgendaPage(), _buildPerfilPage()],
       ),
       bottomNavigationBar: _buildBottomNavigation(),
     );
@@ -86,6 +87,10 @@ class _DashboardUserViewState extends State<DashboardUserView> {
         );
       },
     );
+  }
+  
+  Widget _buildAgendaPage() {
+    return const AgendaUsuarioView();
   }
 
   Widget _buildSliverAppBar() {
@@ -479,6 +484,13 @@ class _DashboardUserViewState extends State<DashboardUserView> {
             activeIcon: Icon(Icons.map),
             label: 'Mapa',
           ),
+
+          BottomNavigationBarItem(
+            icon: Icon(Icons.event_note),
+            activeIcon: Icon(Icons.event_note),
+            label: 'Agenda',
+          ),
+        
           BottomNavigationBarItem(
             icon: Icon(Icons.person_outline),
             activeIcon: Icon(Icons.person),

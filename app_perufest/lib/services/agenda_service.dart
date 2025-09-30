@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../models/agenda.dart';
 class AgendaService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   static const String coleccion = 'agenda_usuarios';
@@ -94,6 +95,33 @@ class AgendaService {
       return {'actividades': [], 'detalles': {}};
     }
   }
+
+  Future<List<AgendaUsuario>> obtenerAgendaPorUsuario(String userId) async {
+    try {
+      final doc = await _firestore.collection(coleccion).doc(userId).get();
+      if (!doc.exists || doc.data() == null) return [];
+
+      final data = doc.data()!;
+      final actividades = List<String>.from(data['actividades'] ?? []);
+      final detalles = Map<String, dynamic>.from(data['detalles'] ?? {});
+
+      return actividades.map((actividadId) {
+        final detalle = detalles[actividadId] ?? {};
+        return AgendaUsuario(
+          id: actividadId,
+          userId: userId,
+          actividadId: actividadId,
+          fechaAgregado: (detalle['fechaAgregado'] as Timestamp?)?.toDate() ?? DateTime.now(),
+          estado: 'confirmado',
+          recordatorioMinutos: detalle['recordatorioMinutos'] ?? 30,
+        );
+      }).toList();
+    } catch (e) {
+      print('Error al obtener agenda por usuario: $e');
+      return [];
+    }
+  }
+
   Future<bool> alternarActividadEnAgenda(String userId, String actividadId, bool estaEnAgenda, {int recordatorioMinutos = 30}) async {
     try {
       final docRef = _firestore.collection(coleccion).doc(userId);
