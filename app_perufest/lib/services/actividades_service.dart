@@ -17,19 +17,6 @@ class ActividadesService {
     }
   }
 
-  Future<Actividad?> obtenerActividadPorId(String actividadId) async {
-    try {
-      final doc = await _firestore.collection(_coleccion).doc(actividadId).get();
-      if (doc.exists && doc.data() != null) {
-        return Actividad.fromFirestore(doc);
-      }
-      return null;
-    } catch (e) {
-      print('Error al obtener actividad: $e');
-      return null;
-    }
-  }
-
   // Obtener actividades de un evento específico
   Future<List<Actividad>> obtenerActividadesPorEvento(String eventoId) async {
     try {

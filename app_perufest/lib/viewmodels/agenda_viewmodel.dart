@@ -1,5 +1,4 @@
 import 'package:flutter/foundation.dart';
-import '../models/agenda.dart';
 import '../services/agenda_service.dart';
 class AgendaViewModel extends ChangeNotifier {
   final AgendaService _agendaService = AgendaService();
@@ -8,8 +7,6 @@ class AgendaViewModel extends ChangeNotifier {
   final Set<String> _actividadesCargando = {};
   String _userId = '';
   int _recordatorioTemporal = 30;
-  List<AgendaUsuario> actividadesAgendadas = [];
-  bool isLoading = false;
 
   String get userId => _userId;
 
@@ -56,26 +53,6 @@ class AgendaViewModel extends ChangeNotifier {
       _actividadesCargando.remove(actividadId);
       notifyListeners();
     }
-  }
-  
-  // NUEVO: Cargar agenda del usuario
-  Future<void> cargarAgendaUsuario(String userId) async {
-    isLoading = true;
-    notifyListeners();
-    try {
-      actividadesAgendadas = await _agendaService.obtenerAgendaPorUsuario(userId);
-    } catch (e) {
-      actividadesAgendadas = [];
-    }
-    isLoading = false;
-    notifyListeners();
-  }
-
-  // NUEVO: Eliminar actividad de la agenda
-  Future<void> eliminarDeAgenda(String actividadId) async {
-    await _agendaService.quitarActividadDeAgenda(_userId, actividadId);
-    actividadesAgendadas.removeWhere((a) => a.actividadId == actividadId);
-    notifyListeners();
   }
 
   Future<void> verificarEstadoActividades(List<String> actividadesIds) async {
