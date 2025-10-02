@@ -4,6 +4,7 @@ import 'viewmodels/auth_viewmodel.dart';
 import 'viewmodels/eventos_viewmodel.dart';
 import 'viewmodels/actividades_viewmodel.dart';
 import 'viewmodels/recuperacion_viewmodel.dart';
+import 'viewmodels/stands_viewmodel.dart';
 import 'views/login_view.dart';
 import 'viewmodels/agenda_viewmodel.dart';
 class MyApp extends StatelessWidget {
@@ -17,6 +18,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ActividadesViewModel()),
         ChangeNotifierProvider(create: (_) => RecuperacionViewModel()),
         ChangeNotifierProvider(create: (_) => AgendaViewModel()),
+        ChangeNotifierProvider(create: (_) => StandsViewModel()),
       ],
       child: MaterialApp(
         title: 'PeruFest',

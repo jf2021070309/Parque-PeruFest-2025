@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'admin/noticias_page.dart';
 import 'admin/eventos_page.dart';
 import 'admin/actividades_page.dart';
+import 'admin/stands_page.dart';
 import 'admin/estadisticas_page.dart';
 import 'admin/mapa_admin_view.dart';
 import 'perfil_administrador_view.dart';
@@ -23,6 +24,7 @@ class _DashboardAdminViewState extends State<DashboardAdminView> {
     const NoticiasPage(),
     const EventosPage(),
     const ActividadesPage(),
+    const StandsPage(),
     const MapaAdminView(),
     const EstadisticasPage(),
   ];
@@ -97,7 +99,7 @@ class _DashboardAdminViewState extends State<DashboardAdminView> {
         ],
       ),
       body: SafeArea(
-        child: _currentIndex == 5 ? _buildPerfilPage() : _pages[_currentIndex],
+        child: _currentIndex == 6 ? _buildPerfilPage() : _pages[_currentIndex],
       ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
@@ -105,6 +107,8 @@ class _DashboardAdminViewState extends State<DashboardAdminView> {
         onTap: _onTabTapped,
         selectedItemColor: const Color(0xFF8B1B1B),
         unselectedItemColor: Colors.grey.shade600,
+        selectedFontSize: 11,
+        unselectedFontSize: 10,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.article), label: 'Noticias'),
           BottomNavigationBarItem(icon: Icon(Icons.event), label: 'Eventos'),
@@ -112,6 +116,7 @@ class _DashboardAdminViewState extends State<DashboardAdminView> {
             icon: Icon(Icons.local_activity),
             label: 'Actividades',
           ),
+          BottomNavigationBarItem(icon: Icon(Icons.store), label: 'Stands'),
           BottomNavigationBarItem(icon: Icon(Icons.map), label: 'Zonas'),
           BottomNavigationBarItem(
             icon: Icon(Icons.bar_chart),
