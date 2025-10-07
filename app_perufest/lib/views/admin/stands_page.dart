@@ -18,43 +18,57 @@ class _StandsPageState extends State<StandsPage> {
     return Consumer<StandsViewModel>(
       builder: (context, standsViewModel, child) {
         return Scaffold(
-          body: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Gestión de Stands',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF8B1B1B),
+          body: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Título principal
+                  const Text(
+                    'Gestión de Stands',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF8B1B1B),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                
-                // Selector de evento
-                _buildSelectorEvento(standsViewModel),
-                const SizedBox(height: 16),
-                
-                // Selector de zona (solo si hay evento seleccionado)
-                if (standsViewModel.eventoSeleccionado != null) ...[
-                  _buildSelectorZona(standsViewModel),
                   const SizedBox(height: 16),
+                  
+                  // Contenido scrolleable
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Selector de evento
+                          _buildSelectorEvento(standsViewModel),
+                          const SizedBox(height: 16),
+                          
+                          // Selector de zona (solo si hay evento seleccionado)
+                          if (standsViewModel.eventoSeleccionado != null) ...[
+                            _buildSelectorZona(standsViewModel),
+                            const SizedBox(height: 16),
+                          ],
+                          
+                          // Botón agregar stand (solo si hay evento y zona seleccionados)
+                          if (standsViewModel.eventoSeleccionado != null && 
+                              standsViewModel.zonaSeleccionada != null) ...[
+                            _buildBotonAgregarStand(context),
+                            const SizedBox(height: 16),
+                          ],
+                          
+                          // Lista de stands con altura mínima
+                          SizedBox(
+                            height: MediaQuery.of(context).size.height * 0.4,
+                            child: _buildListaStands(standsViewModel),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ],
-                
-                // Botón agregar stand (solo si hay evento y zona seleccionados)
-                if (standsViewModel.eventoSeleccionado != null && 
-                    standsViewModel.zonaSeleccionada != null) ...[
-                  _buildBotonAgregarStand(context),
-                  const SizedBox(height: 16),
-                ],
-                
-                // Lista de stands
-                Expanded(
-                  child: _buildListaStands(standsViewModel),
-                ),
-              ],
+              ),
             ),
           ),
         );
@@ -63,6 +77,9 @@ class _StandsPageState extends State<StandsPage> {
   }
 
   Widget _buildSelectorEvento(StandsViewModel standsViewModel) {
+    final screenHeight = MediaQuery.of(context).size.height;
+    final maxDropdownHeight = screenHeight * 0.3; // Máximo 30% de la altura de pantalla
+    
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -77,37 +94,87 @@ class _StandsPageState extends State<StandsPage> {
               ),
             ),
             const SizedBox(height: 8),
-            DropdownButtonFormField<Evento>(
-              value: standsViewModel.eventoSeleccionado,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                hintText: 'Seleccione un evento',
+            Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey.shade400),
+                borderRadius: BorderRadius.circular(4.0),
               ),
-              items: standsViewModel.eventos.map((evento) {
-                return DropdownMenuItem<Evento>(
-                  value: evento,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        evento.nombre,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<Evento>(
+                  value: standsViewModel.eventoSeleccionado,
+                  isExpanded: true,
+                  hint: const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 16.0),
+                    child: Text(
+                      'Seleccione un evento',
+                      style: TextStyle(
+                        color: Colors.grey,
+                        fontSize: 16,
                       ),
-                      Text(
-                        evento.lugar,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey[600],
+                    ),
+                  ),
+                  icon: const Padding(
+                    padding: EdgeInsets.only(right: 12.0),
+                    child: Icon(Icons.arrow_drop_down),
+                  ),
+                  menuMaxHeight: maxDropdownHeight,
+                  selectedItemBuilder: (BuildContext context) {
+                    return standsViewModel.eventos.map<Widget>((Evento evento) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 16.0),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            evento.nombre,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      );
+                    }).toList();
+                  },
+                  items: standsViewModel.eventos.map((evento) {
+                    return DropdownMenuItem<Evento>(
+                      value: evento,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              evento.nombre,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              evento.lugar,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey[600],
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                            ),
+                          ],
                         ),
                       ),
-                    ],
-                  ),
-                );
-              }).toList(),
-              onChanged: (evento) {
-                standsViewModel.setEventoSeleccionado(evento);
-              },
+                    );
+                  }).toList(),
+                  onChanged: (evento) {
+                    standsViewModel.setEventoSeleccionado(evento);
+                  },
+                ),
+              ),
             ),
           ],
         ),
@@ -116,6 +183,9 @@ class _StandsPageState extends State<StandsPage> {
   }
 
   Widget _buildSelectorZona(StandsViewModel standsViewModel) {
+    final screenHeight = MediaQuery.of(context).size.height;
+    final maxDropdownHeight = screenHeight * 0.3; // Máximo 30% de la altura de pantalla
+    
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -130,37 +200,87 @@ class _StandsPageState extends State<StandsPage> {
               ),
             ),
             const SizedBox(height: 8),
-            DropdownButtonFormField<Zona>(
-              value: standsViewModel.zonaSeleccionada,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                hintText: 'Seleccione una zona',
+            Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey.shade400),
+                borderRadius: BorderRadius.circular(4.0),
               ),
-              items: ZonasParque.todasLasZonas.map((zona) {
-                return DropdownMenuItem<Zona>(
-                  value: zona,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        zona.nombre,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<Zona>(
+                  value: standsViewModel.zonaSeleccionada,
+                  isExpanded: true,
+                  hint: const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 16.0),
+                    child: Text(
+                      'Seleccione una zona',
+                      style: TextStyle(
+                        color: Colors.grey,
+                        fontSize: 16,
                       ),
-                      Text(
-                        zona.descripcion,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey[600],
+                    ),
+                  ),
+                  icon: const Padding(
+                    padding: EdgeInsets.only(right: 12.0),
+                    child: Icon(Icons.arrow_drop_down),
+                  ),
+                  menuMaxHeight: maxDropdownHeight,
+                  selectedItemBuilder: (BuildContext context) {
+                    return ZonasParque.todasLasZonas.map<Widget>((Zona zona) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 16.0),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            zona.nombre,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      );
+                    }).toList();
+                  },
+                  items: ZonasParque.todasLasZonas.map((zona) {
+                    return DropdownMenuItem<Zona>(
+                      value: zona,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              zona.nombre,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              zona.descripcion,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey[600],
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 2,
+                            ),
+                          ],
                         ),
                       ),
-                    ],
-                  ),
-                );
-              }).toList(),
-              onChanged: (zona) {
-                standsViewModel.setZonaSeleccionada(zona);
-              },
+                    );
+                  }).toList(),
+                  onChanged: (zona) {
+                    standsViewModel.setZonaSeleccionada(zona);
+                  },
+                ),
+              ),
             ),
           ],
         ),
