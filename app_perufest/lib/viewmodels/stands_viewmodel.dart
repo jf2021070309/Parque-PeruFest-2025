@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/stand.dart';
 import '../models/evento.dart';
 import '../models/zona.dart';
 
 class StandsViewModel extends ChangeNotifier {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
   List<Stand> _stands = [];
   List<Evento> _eventos = [];
   bool _isLoading = false;
@@ -53,9 +56,12 @@ class StandsViewModel extends ChangeNotifier {
 
   // Obtener stands por zona
   List<Stand> getStandsPorZona(String eventoId, int zonaNumero) {
-    return _stands.where((stand) => 
-      stand.eventoId == eventoId && stand.zonaNumero == zonaNumero
-    ).toList();
+    return _stands
+        .where(
+          (stand) =>
+              stand.eventoId == eventoId && stand.zonaNumero == zonaNumero,
+        )
+        .toList();
   }
 
   // Agregar nuevo stand
@@ -77,15 +83,13 @@ class StandsViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // Simulación de guardado - aquí iría la lógica real con Supabase
-      await Future.delayed(const Duration(seconds: 1));
-
       // Procesar productos
-      List<String> productos = productosController.text
-          .split(',')
-          .map((p) => p.trim())
-          .where((p) => p.isNotEmpty)
-          .toList();
+      List<String> productos =
+          productosController.text
+              .split(',')
+              .map((p) => p.trim())
+              .where((p) => p.isNotEmpty)
+              .toList();
 
       final nuevoStand = Stand(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -102,9 +106,21 @@ class StandsViewModel extends ChangeNotifier {
         fechaActualizacion: DateTime.now(),
       );
 
+      // Guardar en Firestore en la colección 'stands'
+      final docRef = _firestore.collection('stands').doc(nuevoStand.id);
+      final data = Map<String, dynamic>.from(nuevoStand.toJson());
+      // Convertir fechas a Timestamp para Firestore
+      data['fecha_creacion'] = Timestamp.fromDate(nuevoStand.fechaCreacion);
+      data['fecha_actualizacion'] = Timestamp.fromDate(
+        nuevoStand.fechaActualizacion,
+      );
+
+      await docRef.set(data);
+
+      // Añadir localmente
       _stands.add(nuevoStand);
       _limpiarFormulario();
-      
+
       _isLoading = false;
       notifyListeners();
     } catch (e) {
@@ -120,11 +136,15 @@ class StandsViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // Simulación - aquí iría la lógica real
-      await Future.delayed(const Duration(milliseconds: 500));
-      
+      // Intentar eliminar en Firestore (si existe)
+      try {
+        await _firestore.collection('stands').doc(standId).delete();
+      } catch (_) {
+        // Ignorar si no existe o falla; igual removeremos localmente
+      }
+
       _stands.removeWhere((stand) => stand.id == standId);
-      
+
       _isLoading = false;
       notifyListeners();
     } catch (e) {
@@ -223,16 +243,5 @@ class StandsViewModel extends ChangeNotifier {
         fechaActualizacion: DateTime.now(),
       ),
     ];
-  }
-
-  @override
-  void dispose() {
-    nombreEmpresaController.dispose();
-    descripcionController.dispose();
-    contactoController.dispose();
-    telefonoController.dispose();
-    imagenUrlController.dispose();
-    productosController.dispose();
-    super.dispose();
   }
 }
