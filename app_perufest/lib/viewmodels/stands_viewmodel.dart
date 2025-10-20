@@ -46,7 +46,10 @@ class StandsViewModel extends ChangeNotifier {
   void inicializarEventosSiEsNecesario() {
     if (!_eventosIniciados && !_isLoading) {
       _eventosIniciados = true;
-      cargarEventos();
+      // Usar addPostFrameCallback para evitar setState durante build
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        cargarEventos();
+      });
     }
   }
 
@@ -389,5 +392,88 @@ class StandsViewModel extends ChangeNotifier {
       _isLoading = false;
       notifyListeners();
     }
+  }
+
+  // Cargar stands específicos por evento
+  Future<void> cargarStandsPorEvento(String eventoId) async {
+    try {
+      _isLoading = true;
+      _error = '';
+      notifyListeners();
+
+      print('DEBUG: Buscando stands para evento ID: $eventoId');
+
+      // Primero, obtener todos los stands para debug
+      final allStandsQuery = await _firestore.collection('stands').get();
+      print('DEBUG: Total stands en base de datos: ${allStandsQuery.docs.length}');
+      
+      for (var doc in allStandsQuery.docs) {
+        final data = doc.data();
+        print('DEBUG: Stand en DB - ID: ${doc.id}, evento_id: ${data['evento_id']}, nombre: ${data['nombre_empresa']}');
+      }
+
+      // Ahora buscar específicamente para este evento
+      final querySnapshot = await _firestore
+          .collection('stands')
+          .where('evento_id', isEqualTo: eventoId)
+          .where('estado', isEqualTo: 'activo')
+          .get();
+
+      print('DEBUG: Stands encontrados para evento $eventoId: ${querySnapshot.docs.length}');
+      
+      if (querySnapshot.docs.isNotEmpty) {
+        for (var doc in querySnapshot.docs) {
+          print('DEBUG: Stand encontrado: ${doc.data()}');
+        }
+      }
+
+      _stands = querySnapshot.docs.map((doc) {
+        final data = doc.data();
+        return Stand(
+          id: doc.id,
+          nombreEmpresa: data['nombre_empresa'] ?? data['nombreEmpresa'] ?? '',
+          descripcion: data['descripcion'] ?? '',
+          imagenUrl: data['imagen_url'] ?? data['imagenUrl'] ?? '',
+          eventoId: data['evento_id'] ?? data['eventoId'] ?? '',
+          zonaNumero: data['zona_numero'] ?? data['zonaNumero'] ?? 0,
+          zonaNombre: data['zona_nombre'] ?? data['zonaNombre'] ?? '',
+          productos: List<String>.from(data['productos'] ?? []),
+          contacto: data['contacto'] ?? '',
+          telefono: data['telefono'] ?? '',
+          fechaCreacion: _parseDate(data['fecha_creacion']) ?? DateTime.now(),
+          fechaActualizacion: _parseDate(data['fecha_actualizacion']) ?? DateTime.now(),
+        );
+      }).toList();
+
+      print('DEBUG: Stands procesados: ${_stands.length}');
+
+      _error = '';
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      print('DEBUG: Error al cargar stands: $e');
+      _error = 'Error al cargar stands del evento: ${e.toString()}';
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  // Obtener zonas únicas de los stands cargados
+  List<String> getZonasUnicas() {
+    final zonasSet = <String>{};
+    for (final stand in _stands) {
+      if (stand.zonaNombre.isNotEmpty) {
+        zonasSet.add(stand.zonaNombre);
+      }
+    }
+    return zonasSet.toList()..sort();
+  }
+
+  // Filtrar stands por zona
+  List<Stand> filtrarStandsPorZona(String? zonaNombre) {
+    if (zonaNombre == null || zonaNombre.isEmpty || zonaNombre == 'Todas') {
+      return _stands;
+    }
+    return _stands.where((stand) => stand.zonaNombre == zonaNombre).toList();
   }
 }

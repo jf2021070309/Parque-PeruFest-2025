@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import '../models/evento.dart';
 import '../viewmodels/eventos_viewmodel.dart';
 import '../viewmodels/auth_viewmodel.dart';
-import 'visitante/actividades_evento_view.dart';
+import 'visitante/evento_opciones_view.dart';
 import 'perfil_usuario_view.dart';
 import 'visitante/mapa_view.dart';
 
@@ -587,7 +587,7 @@ class _DashboardUserViewState extends State<DashboardUserView> {
       MaterialPageRoute(
         builder:
             (context) =>
-                ActividadesEventoView(evento: evento, userId: currentUserId),
+                EventoOpcionesView(evento: evento, userId: currentUserId),
       ),
     );
   }
