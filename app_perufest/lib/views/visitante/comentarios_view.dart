@@ -27,17 +27,23 @@ class _ComentariosViewState extends State<ComentariosView> {
   int _estrellas = 5;
   bool _enviando = false;
 
+  late ComentariosViewModel _vm;
+  late VoidCallback _listener;
+
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final vm = context.read<ComentariosViewModel>();
-      vm.cargarComentariosPorStand(widget.standId);
-    });
+    _vm = context.read<ComentariosViewModel>();
+    _listener = () {
+      if (mounted) setState(() {});
+    };
+    _vm.addListener(_listener);
+    _vm.cargarComentariosPorStand(widget.standId);
   }
 
   @override
   void dispose() {
+    _vm.removeListener(_listener);
     _textoController.dispose();
     super.dispose();
   }
@@ -56,63 +62,65 @@ class _ComentariosViewState extends State<ComentariosView> {
 
     return Scaffold(
       appBar: AppBar(title: Text('Valorar: ${widget.standNombre}')),
-      body: Column(
-        children: [
-          Padding(padding: const EdgeInsets.all(12), child: _buildResumen(vm)),
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: _buildForm(auth, vm),
-          ),
-          const Divider(),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Opiniones públicas',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey.shade800,
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(12),
+                child: _buildResumen(vm),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(12),
+                child: _buildForm(auth, vm),
+              ),
+              const Divider(),
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Opiniones públicas',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey.shade800,
+                    ),
+                  ),
                 ),
               ),
-            ),
+              if (vm.isLoading)
+                const Center(child: CircularProgressIndicator())
+              else if (publicos.isEmpty)
+                const Center(
+                  child: Text('Aún no hay comentarios. Sé el primero.'),
+                )
+              else
+                ...List.generate(
+                  top3.length,
+                  (index) => _buildComentarioCard(top3[index], vm),
+                ),
+              Center(
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (_) => OpinionesTodasPage(standId: widget.standId),
+                      ),
+                    );
+                  },
+                  child: const Text('Ver todas las opiniones'),
+                ),
+              ),
+            ],
           ),
-          Expanded(
-            child:
-                vm.isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : publicos.isEmpty
-                    ? const Center(
-                      child: Text('Aún no hay comentarios. Sé el primero.'),
-                    )
-                    : ListView.builder(
-                      padding: const EdgeInsets.all(12),
-                      itemCount: top3.length + 1,
-                      itemBuilder: (context, index) {
-                        if (index == top3.length) {
-                          return Center(
-                            child: ElevatedButton(
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder:
-                                        (_) => OpinionesTodasPage(
-                                          standId: widget.standId,
-                                        ),
-                                  ),
-                                );
-                              },
-                              child: const Text('Ver todas las opiniones'),
-                            ),
-                          );
-                        }
-                        final c = top3[index];
-                        return _buildComentarioCard(c, vm);
-                      },
-                    ),
-          ),
-        ],
+        ),
       ),
     );
   }

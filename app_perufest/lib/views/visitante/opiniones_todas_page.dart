@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../viewmodels/comentarios_viewmodel.dart';
+import '../../viewmodels/auth_viewmodel.dart';
 import '../../models/comentario.dart';
 
 class OpinionesTodasPage extends StatefulWidget {
@@ -25,30 +26,49 @@ enum OpinionesFilter {
 
 class _OpinionesTodasPageState extends State<OpinionesTodasPage> {
   OpinionesFilter _filter = OpinionesFilter.todas;
+  late ComentariosViewModel _vm;
+  late VoidCallback _listener;
 
   @override
   void initState() {
     super.initState();
-    final vm = context.read<ComentariosViewModel>();
-    vm.cargarComentariosPorStand(widget.standId);
+    _vm = context.read<ComentariosViewModel>();
+    _listener = () {
+      if (mounted) setState(() {});
+    };
+    _vm.addListener(_listener);
+    // Solo recargar si la lista está vacía
+    if (_vm.comentarios
+        .where((c) => c.publico && c.standId == widget.standId)
+        .isEmpty) {
+      _vm.cargarComentariosPorStand(widget.standId);
+    }
+  }
+
+  @override
+  void dispose() {
+    _vm.removeListener(_listener);
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<ComentariosViewModel>();
-    List<Comentario> lista =
-        vm.comentarios
-            .where((c) => c.publico && c.standId == widget.standId)
-            .toList();
+  List<Comentario> lista =
+    vm.comentarios
+      .where((c) => c.standId == widget.standId)
+      .toList();
 
     switch (_filter) {
       case OpinionesFilter.todas:
         break;
       case OpinionesFilter.positivas:
-        lista.sort((a, b) => b.utilSi.compareTo(a.utilSi));
+        lista = lista.where((c) => c.estrellas >= 4).toList();
+        lista.sort((a, b) => b.estrellas.compareTo(a.estrellas));
         break;
       case OpinionesFilter.negativas:
-        lista.sort((a, b) => b.utilNo.compareTo(a.utilNo));
+        lista = lista.where((c) => c.estrellas <= 3).toList();
+        lista.sort((a, b) => b.estrellas.compareTo(a.estrellas));
         break;
       case OpinionesFilter.estrellas5:
         lista = lista.where((c) => c.estrellas == 5).toList();
@@ -71,29 +91,48 @@ class _OpinionesTodasPageState extends State<OpinionesTodasPage> {
       appBar: AppBar(title: const Text('Opiniones')),
       body: Column(
         children: [
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                _filterChip('Todas', OpinionesFilter.todas),
-                _filterChip('Positivas', OpinionesFilter.positivas),
-                _filterChip('Negativas', OpinionesFilter.negativas),
-                _filterChip('5★', OpinionesFilter.estrellas5),
-                _filterChip('4★', OpinionesFilter.estrellas4),
-                _filterChip('3★', OpinionesFilter.estrellas3),
-                _filterChip('2★', OpinionesFilter.estrellas2),
-                _filterChip('1★', OpinionesFilter.estrellas1),
-              ],
+          Container(
+            width: double.infinity,
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  _filterChip('Todas', OpinionesFilter.todas),
+                  _filterChip('Positivas', OpinionesFilter.positivas),
+                  _filterChip('Negativas', OpinionesFilter.negativas),
+                  _filterChip('5★', OpinionesFilter.estrellas5),
+                  _filterChip('4★', OpinionesFilter.estrellas4),
+                  _filterChip('3★', OpinionesFilter.estrellas3),
+                  _filterChip('2★', OpinionesFilter.estrellas2),
+                  _filterChip('1★', OpinionesFilter.estrellas1),
+                ],
+              ),
             ),
           ),
           const Divider(),
           Expanded(
             child:
-                vm.isLoading
-                    ? const Center(child: Text('Cargando...'))
-                    : lista.isEmpty
-                    ? const Center(
-                      child: Text('No hay opiniones para este filtro'),
+                lista.isEmpty
+                    ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.forum_outlined,
+                            size: 48,
+                            color: Colors.grey.shade400,
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            'Aún no hay opiniones para este filtro',
+                            style: TextStyle(
+                              color: Colors.grey.shade600,
+                              fontSize: 16,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
                     )
                     : ListView.builder(
                       padding: const EdgeInsets.all(12),
@@ -101,6 +140,15 @@ class _OpinionesTodasPageState extends State<OpinionesTodasPage> {
                       itemBuilder: (context, index) {
                         final c = lista[index];
                         final fecha = c.fecha.toLocal();
+                        final auth = Provider.of<AuthViewModel>(
+                          context,
+                          listen: false,
+                        );
+                        final userId = auth.currentUser?.id ?? '';
+                        final voto = vm.getVotoUsuario(
+                          c.id,
+                          userId,
+                        ); // 'si', 'no' o null
                         return Card(
                           margin: const EdgeInsets.only(bottom: 10),
                           child: Padding(
@@ -145,50 +193,105 @@ class _OpinionesTodasPageState extends State<OpinionesTodasPage> {
                                   ),
                                 ),
                                 const SizedBox(height: 6),
-                                Text(
-                                  'Fue útil para ${c.utilSi} personas • No útil para ${c.utilNo} personas',
-                                ),
+                                Text('Fue útil para ${c.utilSi} personas'),
                                 const SizedBox(height: 6),
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.end,
                                   children: [
-                                    TextButton(
-                                      onPressed: () async {
-                                        final ok = await vm.marcarUtil(
-                                          c.id,
-                                          'si',
-                                        );
-                                        if (ok)
-                                          ScaffoldMessenger.of(
-                                            context,
-                                          ).showSnackBar(
-                                            const SnackBar(
-                                              content: Text(
-                                                'Gracias por los comentarios',
-                                              ),
-                                            ),
-                                          );
-                                      },
-                                      child: const Text('Si'),
+                                    const Text(
+                                      '¿Te resultó útil esta opinión?',
                                     ),
-                                    TextButton(
-                                      onPressed: () async {
-                                        final ok = await vm.marcarUtil(
-                                          c.id,
-                                          'no',
-                                        );
-                                        if (ok)
-                                          ScaffoldMessenger.of(
-                                            context,
-                                          ).showSnackBar(
-                                            const SnackBar(
-                                              content: Text(
-                                                'Gracias por los comentarios',
-                                              ),
+                                    SizedBox(width: 8),
+                                    ChoiceChip(
+                                      label: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Text('Si'),
+                                          if (voto == 'si') ...[
+                                            const SizedBox(width: 4),
+                                            Icon(
+                                              Icons.check,
+                                              color: Colors.green,
+                                              size: 18,
                                             ),
+                                          ],
+                                        ],
+                                      ),
+                                      selected: voto == 'si',
+                                      selectedColor: Colors.green.shade100,
+                                      onSelected: (selected) async {
+                                        if (selected && voto != 'si') {
+                                          final ok = await vm.marcarVotoUnico(
+                                            c.id,
+                                            userId,
+                                            'si',
+                                            voto,
                                           );
+                                          if (ok) {
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(
+                                              const SnackBar(
+                                                content: Text(
+                                                  '¡Gracias por tu opinión!',
+                                                ),
+                                              ),
+                                            );
+                                            WidgetsBinding.instance
+                                                .addPostFrameCallback((_) {
+                                                  vm.cargarComentariosPorStand(
+                                                    widget.standId,
+                                                  );
+                                                });
+                                          }
+                                        }
                                       },
-                                      child: const Text('No'),
+                                    ),
+                                    SizedBox(width: 8),
+                                    ChoiceChip(
+                                      label: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Text('No'),
+                                          if (voto == 'no') ...[
+                                            const SizedBox(width: 4),
+                                            Icon(
+                                              Icons.check,
+                                              color: Colors.red,
+                                              size: 18,
+                                            ),
+                                          ],
+                                        ],
+                                      ),
+                                      selected: voto == 'no',
+                                      selectedColor: Colors.red.shade100,
+                                      onSelected: (selected) async {
+                                        if (selected && voto != 'no') {
+                                          final ok = await vm.marcarVotoUnico(
+                                            c.id,
+                                            userId,
+                                            'no',
+                                            voto,
+                                          );
+                                          if (ok) {
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(
+                                              const SnackBar(
+                                                content: Text(
+                                                  '¡Gracias por tu opinión!',
+                                                ),
+                                              ),
+                                            );
+                                            WidgetsBinding.instance
+                                                .addPostFrameCallback((_) {
+                                                  vm.cargarComentariosPorStand(
+                                                    widget.standId,
+                                                  );
+                                                });
+                                          }
+                                        }
+                                      },
                                     ),
                                   ],
                                 ),

@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/comentario.dart';
 
@@ -95,16 +96,14 @@ class ComentariosViewModel extends ChangeNotifier {
   String get error => _error;
 
   Future<void> cargarComentariosPorStand(String standId) async {
-    // Marcar stand actual y limpiar lista para evitar mostrar comentarios viejos
     _currentStandId = standId;
     _comentarios = [];
     _isLoading = true;
     _error = '';
-    notifyListeners();
-    try {
-      // Primero intentamos con el campo 'standId'
-      final col = _firestore.collection('comentarios');
+    // No notificar aquí; solo cuando termina la carga o hay error
 
+    try {
+      final col = _firestore.collection('comentarios');
       final q1 =
           await col
               .where('standId', isEqualTo: standId)
@@ -112,7 +111,6 @@ class ComentariosViewModel extends ChangeNotifier {
               .orderBy('fecha', descending: true)
               .get();
 
-      // También intentamos con el nombre alternativo 'stand_id' (compatibilidad hacia atrás)
       final q2 =
           await col
               .where('stand_id', isEqualTo: standId)
@@ -120,7 +118,6 @@ class ComentariosViewModel extends ChangeNotifier {
               .orderBy('fecha', descending: true)
               .get();
 
-      // Unir resultados por id para evitar duplicados
       final Map<String, DocumentSnapshot> docsById = {};
       for (final d in q1.docs) docsById[d.id] = d;
       for (final d in q2.docs) docsById[d.id] = d;
@@ -134,14 +131,20 @@ class ComentariosViewModel extends ChangeNotifier {
                     Comentario.fromJson(d.data() as Map<String, dynamic>, d.id),
               )
               .toList();
+
       _isLoading = false;
-      notifyListeners();
+
+      // Notificar cambios después de cargar datos
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
     } catch (e) {
-      // Evitar mostrar comentarios de otro stand en caso de error
       _error = 'Error al cargar comentarios: $e';
       _comentarios = [];
       _isLoading = false;
-      notifyListeners();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
     }
   }
 
