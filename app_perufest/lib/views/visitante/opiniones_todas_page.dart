@@ -54,10 +54,10 @@ class _OpinionesTodasPageState extends State<OpinionesTodasPage> {
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<ComentariosViewModel>();
-  List<Comentario> lista =
-    vm.comentarios
-      .where((c) => c.standId == widget.standId)
-      .toList();
+    List<Comentario> lista =
+        vm.comentarios
+            .where((c) => c.publico && c.standId == widget.standId)
+            .toList();
 
     switch (_filter) {
       case OpinionesFilter.todas:
