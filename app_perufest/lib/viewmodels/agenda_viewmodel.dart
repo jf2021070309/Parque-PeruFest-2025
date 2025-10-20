@@ -1,7 +1,9 @@
 import 'package:flutter/foundation.dart';
 import '../services/agenda_service.dart';
+import '../services/notificaciones_service.dart';
 class AgendaViewModel extends ChangeNotifier {
   final AgendaService _agendaService = AgendaService();
+  final NotificacionesService _notificacionesService = NotificacionesService();
 
   final Map<String, bool> _actividadesEnAgenda = {};
   final Set<String> _actividadesCargando = {};

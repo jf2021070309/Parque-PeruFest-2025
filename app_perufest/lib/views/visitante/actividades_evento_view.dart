@@ -4,7 +4,7 @@ import '../../models/evento.dart';
 import '../../models/actividad.dart';
 import '../../viewmodels/actividades_viewmodel.dart';
 import '../../viewmodels/agenda_viewmodel.dart';
-import 'package:timezone/timezone.dart' as tz;
+import '../../services/notificaciones_service.dart';
 class ActividadesEventoView extends StatefulWidget {
   final Evento evento;
   final String userId; // Agregar userId como parámetro
@@ -410,56 +410,67 @@ class _ActividadesEventoViewState extends State<ActividadesEventoView>
       builder: (context, agendaViewModel, child) {
         final estaEnAgenda = agendaViewModel.estaEnAgenda(actividad.id);
         final estaCargando = agendaViewModel.estaCargando(actividad.id);
-
-        // Usar timezone de Perú
-        final ahoraPeruana = tz.TZDateTime.now(tz.getLocation('America/Lima'));
-        final yaInicio = ahoraPeruana.isAfter(actividad.fechaInicio);
-
+        
+        // Obtener hora actual
+        final ahora = DateTime.now();
+        
+        // La actividad YA INICIÓ si la hora actual es POSTERIOR a la hora de inicio
+        // Agregamos un pequeño buffer de 1 minuto para evitar problemas de sincronización
+        final yaInicio = ahora.isAfter(actividad.fechaInicio.add(const Duration(minutes: 1)));
+        
+        print('¿Ya inició?: $yaInicio');
+        print('==============================');
+        
         if (yaInicio && !estaEnAgenda) {
           return SizedBox(
             width: double.infinity,
             child: Container(
               padding: const EdgeInsets.symmetric(vertical: 12),
               decoration: BoxDecoration(
-                color: Colors.grey.shade300,
+                color: Colors.grey.shade400,
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Center(
-                child: Text(
-                  'Actividad ya iniciada',
-                  style: TextStyle(color: Colors.grey),
+              child: const Text(
+                'Actividad ya iniciada',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ),
           );
         }
-
+        
         return SizedBox(
           width: double.infinity,
           child: ElevatedButton(
             onPressed: estaCargando ? null : () => _manejarBotonAgendar(actividad),
             style: ElevatedButton.styleFrom(
-              backgroundColor: estaEnAgenda ? Colors.green : Colors.white,
-              foregroundColor: estaEnAgenda ? Colors.white : const Color(0xFF8B1B1B),
+              backgroundColor: estaEnAgenda ? Colors.green : const Color(0xFF8B1B1B),
+              foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 12),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
             ),
             child: estaCargando 
-                ? const SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : Row(
+                ? const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(estaEnAgenda ? Icons.check : Icons.add),
-                      const SizedBox(width: 8),
-                      Text(estaEnAgenda ? 'En agenda' : 'Agendar'),
+                      SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      ),
+                      SizedBox(width: 8),
+                      Text('Procesando...'),
                     ],
-                  ),
+                  )
+                : Text(estaEnAgenda ? 'Quitar de Agenda' : 'Agregar a Agenda'),
           ),
         );
       },
@@ -468,13 +479,25 @@ class _ActividadesEventoViewState extends State<ActividadesEventoView>
   // Replace the _manejarBotonAgendar method
   Future<void> _manejarBotonAgendar(Actividad actividad) async {
     final agendaViewModel = context.read<AgendaViewModel>();
-
+    
     // Si está agregando, calcular recordatorio inteligente
     if (!agendaViewModel.estaEnAgenda(actividad.id)) {
-      final ahoraPeruana = tz.TZDateTime.now(tz.getLocation('America/Lima'));
-      final minutosHastaInicio = actividad.fechaInicio.difference(ahoraPeruana).inMinutes;
-      final recordatorioMinutos = minutosHastaInicio > 30 ? 30 : (minutosHastaInicio > 5 ? minutosHastaInicio - 5 : 0);
-
+      final ahora = DateTime.now();
+      final minutosHastaInicio = actividad.fechaInicio.difference(ahora).inMinutes;
+      
+      print('=== DEBUG MANEJAR BOTON ===');
+      print('DateTime.now(): $ahora');
+      print('actividad.fechaInicio: ${actividad.fechaInicio}');
+      print('minutosHastaInicio: $minutosHastaInicio');
+      
+      // CORREGIR: Asegurar que siempre sea mínimo 1 minuto
+      final recordatorioMinutos = minutosHastaInicio > 30 
+          ? 30 
+          : (minutosHastaInicio > 1 ? minutosHastaInicio - 1 : 1);
+      
+      print('recordatorioMinutos calculado: $recordatorioMinutos');
+      print('========================');
+      
       agendaViewModel.setRecordatorioTemporal(recordatorioMinutos);
     }
 

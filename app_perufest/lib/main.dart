@@ -6,6 +6,7 @@ import 'package:timezone/data/latest.dart' as tz; // Add this import
 import 'package:timezone/timezone.dart' as tz; // Add this import
 import 'app.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'services/notificaciones_service.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -15,6 +16,9 @@ void main() async {
 
   // Inicializar datos locales para formateo de fechas en español
   await initializeDateFormatting('es_ES', null);
+
+    // Inicializar notificaciones
+  await NotificacionesService().initialize();
 
   try {
     await Firebase.initializeApp();
