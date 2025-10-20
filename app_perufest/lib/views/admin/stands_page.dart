@@ -14,6 +14,15 @@ class StandsPage extends StatefulWidget {
 
 class _StandsPageState extends State<StandsPage> {
   @override
+  void initState() {
+    super.initState();
+    // Inicializar carga de eventos después de que se construya el widget
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<StandsViewModel>().inicializarEventosSiEsNecesario();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Consumer<StandsViewModel>(
       builder: (context, standsViewModel, child) {
@@ -24,16 +33,34 @@ class _StandsPageState extends State<StandsPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Título principal
-                  const Text(
-                    'Gestión de Stands',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF8B1B1B),
-                    ),
+                  // Título principal con botón de recarga
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Gestión de Stands',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF8B1B1B),
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () {
+                          standsViewModel.cargarEventos();
+                        },
+                        icon: const Icon(Icons.refresh),
+                        tooltip: 'Recargar eventos',
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 16),
+                  
+                  // Mostrar errores si los hay
+                  if (standsViewModel.error.isNotEmpty) ...[
+                    _buildErrorCard(standsViewModel),
+                    const SizedBox(height: 16),
+                  ],
                   
                   // Contenido scrolleable
                   Expanded(
@@ -77,8 +104,13 @@ class _StandsPageState extends State<StandsPage> {
   }
 
   Widget _buildSelectorEvento(StandsViewModel standsViewModel) {
+    // Asegurar que se inicialicen los eventos si aún no se ha hecho
+    if (standsViewModel.eventos.isEmpty && !standsViewModel.isLoading && standsViewModel.error.isEmpty) {
+      standsViewModel.inicializarEventosSiEsNecesario();
+    }
+    
     final screenHeight = MediaQuery.of(context).size.height;
-    final maxDropdownHeight = screenHeight * 0.3; // Máximo 30% de la altura de pantalla
+    final maxDropdownHeight = screenHeight * 0.25; // Máximo 25% de la altura de pantalla
     
     return Card(
       child: Padding(
@@ -100,80 +132,90 @@ class _StandsPageState extends State<StandsPage> {
                 border: Border.all(color: Colors.grey.shade400),
                 borderRadius: BorderRadius.circular(4.0),
               ),
-              child: DropdownButtonHideUnderline(
-                child: DropdownButton<Evento>(
-                  value: standsViewModel.eventoSeleccionado,
-                  isExpanded: true,
-                  hint: const Padding(
+              child: standsViewModel.isLoading 
+                ? const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 16.0),
-                    child: Text(
-                      'Seleccione un evento',
-                      style: TextStyle(
-                        color: Colors.grey,
-                        fontSize: 16,
-                      ),
+                    child: Row(
+                      children: [
+                        SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                        SizedBox(width: 12),
+                        Text(
+                          'Cargando eventos...',
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                      ],
                     ),
-                  ),
-                  icon: const Padding(
-                    padding: EdgeInsets.only(right: 12.0),
-                    child: Icon(Icons.arrow_drop_down),
-                  ),
-                  menuMaxHeight: maxDropdownHeight,
-                  selectedItemBuilder: (BuildContext context) {
-                    return standsViewModel.eventos.map<Widget>((Evento evento) {
-                      return Padding(
+                  )
+                : DropdownButtonHideUnderline(
+                    child: DropdownButton<Evento>(
+                      value: standsViewModel.eventoSeleccionado,
+                      isExpanded: true,
+                      hint: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 16.0),
-                        child: Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            evento.nombre,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                            overflow: TextOverflow.ellipsis,
+                        child: Text(
+                          standsViewModel.eventos.isEmpty 
+                            ? (standsViewModel.error.isNotEmpty 
+                                ? 'Error cargando eventos' 
+                                : 'No hay eventos disponibles')
+                            : 'Seleccione un evento',
+                          style: const TextStyle(
+                            color: Colors.grey,
+                            fontSize: 16,
                           ),
                         ),
-                      );
-                    }).toList();
-                  },
-                  items: standsViewModel.eventos.map((evento) {
-                    return DropdownMenuItem<Evento>(
-                      value: evento,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
+                      ),
+                      icon: const Padding(
+                        padding: EdgeInsets.only(right: 12.0),
+                        child: Icon(Icons.arrow_drop_down),
+                      ),
+                      menuMaxHeight: maxDropdownHeight,
+                      itemHeight: 50, // Altura fija más pequeña para cada item
+                      selectedItemBuilder: (BuildContext context) {
+                        return standsViewModel.eventos.map<Widget>((Evento evento) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 14.0),
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                evento.nombre,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 15,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          );
+                        }).toList();
+                      },
+                      items: standsViewModel.eventos.map((evento) {
+                        return DropdownMenuItem<Evento>(
+                          value: evento,
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+                            child: Text(
                               evento.nombre,
                               style: const TextStyle(
-                                fontWeight: FontWeight.bold,
+                                fontWeight: FontWeight.w400,
                                 fontSize: 14,
                               ),
                               overflow: TextOverflow.ellipsis,
                               maxLines: 1,
                             ),
-                            const SizedBox(height: 2),
-                            Text(
-                              evento.lugar,
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey[600],
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                  onChanged: (evento) {
-                    standsViewModel.setEventoSeleccionado(evento);
-                  },
-                ),
+                          ),
+                        );
+                      }).toList(),
+                      onChanged: standsViewModel.eventos.isEmpty 
+                        ? null 
+                        : (evento) {
+                            standsViewModel.setEventoSeleccionado(evento);
+                          },
+                    ),
               ),
             ),
           ],
@@ -184,7 +226,7 @@ class _StandsPageState extends State<StandsPage> {
 
   Widget _buildSelectorZona(StandsViewModel standsViewModel) {
     final screenHeight = MediaQuery.of(context).size.height;
-    final maxDropdownHeight = screenHeight * 0.3; // Máximo 30% de la altura de pantalla
+    final maxDropdownHeight = screenHeight * 0.25; // Máximo 25% de la altura de pantalla
     
     return Card(
       child: Padding(
@@ -206,80 +248,88 @@ class _StandsPageState extends State<StandsPage> {
                 border: Border.all(color: Colors.grey.shade400),
                 borderRadius: BorderRadius.circular(4.0),
               ),
-              child: DropdownButtonHideUnderline(
-                child: DropdownButton<Zona>(
-                  value: standsViewModel.zonaSeleccionada,
-                  isExpanded: true,
-                  hint: const Padding(
+              child: standsViewModel.isLoadingZonas 
+                ? const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 16.0),
-                    child: Text(
-                      'Seleccione una zona',
-                      style: TextStyle(
-                        color: Colors.grey,
-                        fontSize: 16,
-                      ),
+                    child: Row(
+                      children: [
+                        SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                        SizedBox(width: 12),
+                        Text(
+                          'Cargando zonas...',
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                      ],
                     ),
-                  ),
-                  icon: const Padding(
-                    padding: EdgeInsets.only(right: 12.0),
-                    child: Icon(Icons.arrow_drop_down),
-                  ),
-                  menuMaxHeight: maxDropdownHeight,
-                  selectedItemBuilder: (BuildContext context) {
-                    return ZonasParque.todasLasZonas.map<Widget>((Zona zona) {
-                      return Padding(
+                  )
+                : DropdownButtonHideUnderline(
+                    child: DropdownButton<Zona>(
+                      value: standsViewModel.zonaSeleccionada,
+                      isExpanded: true,
+                      hint: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 16.0),
-                        child: Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            zona.nombre,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                            overflow: TextOverflow.ellipsis,
+                        child: Text(
+                          standsViewModel.zonasDisponibles.isEmpty 
+                            ? 'No hay zonas disponibles para este evento' 
+                            : 'Seleccione una zona',
+                          style: const TextStyle(
+                            color: Colors.grey,
+                            fontSize: 16,
                           ),
                         ),
-                      );
-                    }).toList();
-                  },
-                  items: ZonasParque.todasLasZonas.map((zona) {
-                    return DropdownMenuItem<Zona>(
-                      value: zona,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
+                      ),
+                      icon: const Padding(
+                        padding: EdgeInsets.only(right: 12.0),
+                        child: Icon(Icons.arrow_drop_down),
+                      ),
+                      menuMaxHeight: maxDropdownHeight,
+                      itemHeight: 50, // Altura fija más pequeña para cada item
+                      selectedItemBuilder: (BuildContext context) {
+                        return standsViewModel.zonasDisponibles.map<Widget>((Zona zona) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 14.0),
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                zona.nombre,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 15,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          );
+                        }).toList();
+                      },
+                      items: standsViewModel.zonasDisponibles.map((zona) {
+                        return DropdownMenuItem<Zona>(
+                          value: zona,
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+                            child: Text(
                               zona.nombre,
                               style: const TextStyle(
-                                fontWeight: FontWeight.bold,
+                                fontWeight: FontWeight.w400,
                                 fontSize: 14,
                               ),
                               overflow: TextOverflow.ellipsis,
                               maxLines: 1,
                             ),
-                            const SizedBox(height: 2),
-                            Text(
-                              zona.descripcion,
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey[600],
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 2,
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                  onChanged: (zona) {
-                    standsViewModel.setZonaSeleccionada(zona);
-                  },
-                ),
+                          ),
+                        );
+                      }).toList(),
+                      onChanged: standsViewModel.zonasDisponibles.isEmpty 
+                        ? null 
+                        : (zona) {
+                            standsViewModel.setZonaSeleccionada(zona);
+                          },
+                    ),
               ),
             ),
           ],
@@ -460,6 +510,38 @@ class _StandsPageState extends State<StandsPage> {
             child: const Text('Eliminar'),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildErrorCard(StandsViewModel standsViewModel) {
+    return Card(
+      color: Colors.red.shade50,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Row(
+          children: [
+            Icon(
+              Icons.error_outline,
+              color: Colors.red.shade700,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                standsViewModel.error,
+                style: TextStyle(
+                  color: Colors.red.shade700,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+            IconButton(
+              icon: const Icon(Icons.close),
+              onPressed: () => standsViewModel.limpiarError(),
+              color: Colors.red.shade700,
+            ),
+          ],
+        ),
       ),
     );
   }
