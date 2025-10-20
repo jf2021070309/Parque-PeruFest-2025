@@ -5,8 +5,10 @@ import 'viewmodels/eventos_viewmodel.dart';
 import 'viewmodels/actividades_viewmodel.dart';
 import 'viewmodels/recuperacion_viewmodel.dart';
 import 'viewmodels/stands_viewmodel.dart';
+import 'viewmodels/comentarios_viewmodel.dart';
 import 'views/login_view.dart';
 import 'viewmodels/agenda_viewmodel.dart';
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
   @override
@@ -19,6 +21,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => RecuperacionViewModel()),
         ChangeNotifierProvider(create: (_) => AgendaViewModel()),
         ChangeNotifierProvider(create: (_) => StandsViewModel()),
+        ChangeNotifierProvider(create: (_) => ComentariosViewModel()),
       ],
       child: MaterialApp(
         title: 'PeruFest',
@@ -47,9 +50,7 @@ class MyApp extends StatelessWidget {
           ),
         ),
         home: const LoginView(),
-        routes: {
-          '/login': (context) => const LoginView(),
-        },
+        routes: {'/login': (context) => const LoginView()},
       ),
     );
   }

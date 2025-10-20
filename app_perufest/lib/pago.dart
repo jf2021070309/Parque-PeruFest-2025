@@ -47,11 +47,7 @@ class EventoPago {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 6),
-            Text(
-              descripcion,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
+            Text(descripcion, maxLines: 2, overflow: TextOverflow.ellipsis),
             const SizedBox(height: 6),
             Text('Fecha: $fechaFormateada'),
             Text('Lugar: $lugar'),
@@ -61,11 +57,12 @@ class EventoPago {
           ],
         ),
         trailing: ElevatedButton(
-          onPressed: hayCuposDisponibles
-              ? () {
-                  _mostrarDetalles(context);
-                }
-              : null,
+          onPressed:
+              hayCuposDisponibles
+                  ? () {
+                    _mostrarDetalles(context);
+                  }
+                  : null,
           child: const Text('Detalles'),
         ),
       ),
@@ -75,38 +72,41 @@ class EventoPago {
   void _mostrarDetalles(BuildContext context) {
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        title: Text(titulo),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Descripción:\n$descripcion'),
-            const SizedBox(height: 10),
-            Text('Fecha: $fechaFormateada'),
-            Text('Lugar: $lugar'),
-            Text('Precio: $precioFormateado'),
-            Text('Cupos disponibles: $cuposDisponibles'),
-            Text('Requiere registro: ${requiereRegistro ? "Sí" : "No"}'),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cerrar'),
+      builder:
+          (_) => AlertDialog(
+            title: Text(titulo),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Descripción:\n$descripcion'),
+                const SizedBox(height: 10),
+                Text('Fecha: $fechaFormateada'),
+                Text('Lugar: $lugar'),
+                Text('Precio: $precioFormateado'),
+                Text('Cupos disponibles: $cuposDisponibles'),
+                Text('Requiere registro: ${requiereRegistro ? "Sí" : "No"}'),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cerrar'),
+              ),
+              if (hayCuposDisponibles)
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('¡Registro para "$titulo" realizado!'),
+                      ),
+                    );
+                  },
+                  child: const Text('Registrar'),
+                ),
+            ],
           ),
-          if (hayCuposDisponibles)
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('¡Registro para "$titulo" realizado!')),
-                );
-              },
-              child: const Text('Registrar'),
-            )
-        ],
-      ),
     );
   }
 }

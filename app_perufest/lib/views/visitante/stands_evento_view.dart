@@ -3,14 +3,12 @@ import 'package:provider/provider.dart';
 import '../../models/evento.dart';
 import '../../models/stand.dart';
 import '../../viewmodels/stands_viewmodel.dart';
+import 'comentarios_view.dart';
 
 class StandsEventoView extends StatefulWidget {
   final Evento evento;
 
-  const StandsEventoView({
-    super.key,
-    required this.evento,
-  });
+  const StandsEventoView({super.key, required this.evento});
 
   @override
   State<StandsEventoView> createState() => _StandsEventoViewState();
@@ -43,7 +41,9 @@ class _StandsEventoViewState extends State<StandsEventoView> {
     if (mounted) {
       final standsViewModel = context.read<StandsViewModel>();
       setState(() {
-        _standsFiltrados = standsViewModel.filtrarStandsPorZona(_zonaSeleccionada);
+        _standsFiltrados = standsViewModel.filtrarStandsPorZona(
+          _zonaSeleccionada,
+        );
       });
     }
   }
@@ -96,9 +96,10 @@ class _StandsEventoViewState extends State<StandsEventoView> {
             children: [
               _buildFiltroZonas(zonasDisponibles),
               Expanded(
-                child: _standsFiltrados.isEmpty
-                    ? _buildNoResultsState()
-                    : _buildStandsList(),
+                child:
+                    _standsFiltrados.isEmpty
+                        ? _buildNoResultsState()
+                        : _buildStandsList(),
               ),
             ],
           );
@@ -128,11 +129,7 @@ class _StandsEventoViewState extends State<StandsEventoView> {
         children: [
           Row(
             children: [
-              Icon(
-                Icons.filter_list,
-                size: 20,
-                color: const Color(0xFF8B1B1B),
-              ),
+              Icon(Icons.filter_list, size: 20, color: const Color(0xFF8B1B1B)),
               const SizedBox(width: 8),
               Text(
                 'Filtrar por zona:',
@@ -160,8 +157,10 @@ class _StandsEventoViewState extends State<StandsEventoView> {
                     label: Text(
                       zona,
                       style: TextStyle(
-                        color: isSelected ? Colors.white : const Color(0xFF8B1B1B),
-                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                        color:
+                            isSelected ? Colors.white : const Color(0xFF8B1B1B),
+                        fontWeight:
+                            isSelected ? FontWeight.bold : FontWeight.normal,
                       ),
                     ),
                     selected: isSelected,
@@ -174,7 +173,10 @@ class _StandsEventoViewState extends State<StandsEventoView> {
                     backgroundColor: Colors.white,
                     selectedColor: const Color(0xFF8B1B1B),
                     side: BorderSide(
-                      color: isSelected ? const Color(0xFF8B1B1B) : Colors.grey.shade300,
+                      color:
+                          isSelected
+                              ? const Color(0xFF8B1B1B)
+                              : Colors.grey.shade300,
                     ),
                     checkmarkColor: Colors.white,
                     elevation: isSelected ? 3 : 1,
@@ -225,7 +227,9 @@ class _StandsEventoViewState extends State<StandsEventoView> {
           Container(
             height: 120,
             decoration: BoxDecoration(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(16),
+              ),
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -327,7 +331,9 @@ class _StandsEventoViewState extends State<StandsEventoView> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
-                          stand.zonaNombre.isEmpty ? 'Sin zona' : stand.zonaNombre,
+                          stand.zonaNombre.isEmpty
+                              ? 'Sin zona'
+                              : stand.zonaNombre,
                           style: const TextStyle(
                             color: Color(0xFF8B1B1B),
                             fontSize: 12,
@@ -448,11 +454,7 @@ class _StandsEventoViewState extends State<StandsEventoView> {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(
-                                Icons.phone,
-                                size: 14,
-                                color: Colors.white,
-                              ),
+                              Icon(Icons.phone, size: 14, color: Colors.white),
                               const SizedBox(width: 4),
                               Text(
                                 'Llamar',
@@ -469,6 +471,46 @@ class _StandsEventoViewState extends State<StandsEventoView> {
                     ],
                   ],
                 ),
+                // Botón para valorar
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder:
+                                    (context) =>
+                                    // Import dinámico para evitar ciclos
+                                    // Usaremos la vista creada 'ComentariosView'
+                                    // que debe existir en views/visitante/comentarios_view.dart
+                                    // Pasar standId y nombre
+                                    ComentariosView(
+                                      standId: stand.id,
+                                      standNombre: stand.nombreEmpresa,
+                                    ),
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.rate_review),
+                          label: const Text('Valorar'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF8B1B1B),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
@@ -484,11 +526,7 @@ class _StandsEventoViewState extends State<StandsEventoView> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.error_outline,
-              size: 80,
-              color: Colors.red.shade300,
-            ),
+            Icon(Icons.error_outline, size: 80, color: Colors.red.shade300),
             const SizedBox(height: 16),
             Text(
               'Error al cargar stands',
@@ -570,11 +608,7 @@ class _StandsEventoViewState extends State<StandsEventoView> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.search_off,
-              size: 80,
-              color: Colors.grey.shade400,
-            ),
+            Icon(Icons.search_off, size: 80, color: Colors.grey.shade400),
             const SizedBox(height: 16),
             Text(
               'No hay stands en esta zona',
@@ -602,82 +636,80 @@ class _StandsEventoViewState extends State<StandsEventoView> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.grey.shade300,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              'Contactar',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: const Color(0xFF8B1B1B),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              telefono,
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey.shade600,
-              ),
-            ),
-            const SizedBox(height: 24),
-            Row(
+      builder:
+          (context) => Container(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.pop(context);
-                      // Aquí implementarías la lógica para llamar
-                    },
-                    icon: const Icon(Icons.phone),
-                    label: const Text('Llamar'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF8B1B1B),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(2),
                   ),
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.pop(context);
-                      // Aquí implementarías la lógica para WhatsApp
-                    },
-                    icon: const Icon(Icons.message),
-                    label: const Text('WhatsApp'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF25D366),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
+                const SizedBox(height: 20),
+                Text(
+                  'Contactar',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF8B1B1B),
                   ),
                 ),
+                const SizedBox(height: 8),
+                Text(
+                  telefono,
+                  style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          // Aquí implementarías la lógica para llamar
+                        },
+                        icon: const Icon(Icons.phone),
+                        label: const Text('Llamar'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF8B1B1B),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          // Aquí implementarías la lógica para WhatsApp
+                        },
+                        icon: const Icon(Icons.message),
+                        label: const Text('WhatsApp'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF25D366),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
               ],
             ),
-            const SizedBox(height: 20),
-          ],
-        ),
-      ),
+          ),
     );
   }
 }
