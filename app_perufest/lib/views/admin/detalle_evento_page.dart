@@ -82,12 +82,28 @@ class _DetalleEventoPageState extends State<DetalleEventoPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Estado y categoría
+                      // Estado, categoría y tipo de evento
                       Row(
                         children: [
                           _buildChipEstado(),
                           const SizedBox(width: 8),
                           _buildChipCategoria(),
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: eventoActual.tipoEvento == 'gratis' ? Colors.green : Colors.orange,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Text(
+                              eventoActual.tipoEvento == 'gratis' ? 'GRATIS' : 'DE PAGO',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                       const SizedBox(height: 16),

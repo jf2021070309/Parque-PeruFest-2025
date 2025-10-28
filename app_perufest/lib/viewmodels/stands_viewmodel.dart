@@ -276,6 +276,7 @@ class StandsViewModel extends ChangeNotifier {
             estado: data['estado'] ?? 'activo',
             fechaCreacion: _parseDate(data['fechaCreacion']) ?? DateTime.now(),
             fechaActualizacion: _parseDate(data['fechaActualizacion']) ?? DateTime.now(),
+            tipoEvento: data['tipoEvento'] ?? 'gratis',
           );
         } catch (e) {
           throw Exception('Error al procesar evento ${doc.id}: $e');

@@ -13,6 +13,7 @@ class Evento {
   final String estado;
   final DateTime fechaCreacion;
   final DateTime fechaActualizacion;
+  final String tipoEvento; // 'gratis' o 'pago'
 
   Evento({
     required this.id,
@@ -28,6 +29,7 @@ class Evento {
     required this.estado,
     required this.fechaCreacion,
     required this.fechaActualizacion,
+    required this.tipoEvento,
   });
 
   // Add getters for Peru timezone
@@ -112,6 +114,7 @@ class Evento {
       estado: json['estado'] ?? 'activo',
       fechaCreacion: DateTime.parse(json['fechaCreacion']),
       fechaActualizacion: DateTime.parse(json['fechaActualizacion']),
+      tipoEvento: json['tipoEvento'] ?? 'gratis', // default gratis
     );
   }
 
@@ -129,6 +132,7 @@ class Evento {
       'estado': estado,
       'fechaCreacion': fechaCreacion.toIso8601String(),
       'fechaActualizacion': fechaActualizacion.toIso8601String(),
+      'tipoEvento': tipoEvento,
     };
   }
 
@@ -147,6 +151,7 @@ class Evento {
     String? estado,
     DateTime? fechaCreacion,
     DateTime? fechaActualizacion,
+    String? tipoEvento,
   }) {
     return Evento(
       id: id ?? this.id,
@@ -162,6 +167,7 @@ class Evento {
       estado: estado ?? this.estado,
       fechaCreacion: fechaCreacion ?? this.fechaCreacion,
       fechaActualizacion: fechaActualizacion ?? this.fechaActualizacion,
+      tipoEvento: tipoEvento ?? this.tipoEvento,
     );
   }
 

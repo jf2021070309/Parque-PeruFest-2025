@@ -7,7 +7,9 @@ import '../../services/validador_service.dart';
 import '../../services/imgbb_service.dart';
 import '../../services/timezone.dart';
 import 'dart:io';
-
+  
+String _tipoEventoSeleccionado = 'gratis';
+final List<String> _tiposEvento = ['gratis', 'pago'];
 
 class EditarEventoPage extends StatefulWidget {
   final Evento evento;
@@ -52,6 +54,7 @@ class _EditarEventoPageState extends State<EditarEventoPage> {
   void initState() {
     super.initState();
     _cargarDatosEvento();
+    _tipoEventoSeleccionado = widget.evento.tipoEvento;
   }
 
 void _cargarDatosEvento() {
@@ -63,6 +66,7 @@ void _cargarDatosEvento() {
   _imagenUrlController.text = evento.imagenUrl;
   _categoriaSeleccionada = evento.categoria;
   _estadoSeleccionado = evento.estado;
+  _tipoEventoSeleccionado = evento.tipoEvento;
   
   // Convert to Peru timezone for display  
   final fechaInicioPeruana = TimezoneUtils.toPeru(evento.fechaInicio);
@@ -111,12 +115,32 @@ void _cargarDatosEvento() {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Editando: ${widget.evento.nombre}',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      Row(
+                        children: [
+                          Text(
+                            'Editando: ${widget.evento.nombre}',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: widget.evento.tipoEvento == 'gratis' ? Colors.green : Colors.orange,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              widget.evento.tipoEvento == 'gratis' ? 'GRATIS' : 'DE PAGO',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                       Text(
                         'Creado por: ${widget.evento.creadoPor}',
@@ -135,6 +159,33 @@ void _cargarDatosEvento() {
                     ],
                   ),
                 ),
+              ),
+              const SizedBox(height: 16),
+
+              // Tipo de evento
+              Row(
+                children: [
+                  const Icon(Icons.label, color: Colors.blue),
+                  SizedBox(width: 12),
+                  Text('Tipo de evento *:', style: TextStyle(fontWeight: FontWeight.bold)),
+                  SizedBox(width: 16),
+                  Expanded(
+                    child: Row(
+                      children: _tiposEvento.map((tipo) => Expanded(
+                        child: RadioListTile<String>(
+                          title: Text(tipo == 'gratis' ? 'Gratis' : 'De pago'),
+                          value: tipo,
+                          groupValue: _tipoEventoSeleccionado,
+                          onChanged: (value) {
+                            setState(() {
+                              _tipoEventoSeleccionado = value!;
+                            });
+                          },
+                        ),
+                      )).toList(),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 16),
 
@@ -613,7 +664,8 @@ void _cargarDatosEvento() {
       lugar: _lugarController.text.trim(),
       imagenUrl: imagenUrlFinal ?? widget.evento.imagenUrl,
       estado: _estadoSeleccionado,
-      fechaActualizacion: TimezoneUtils.now(), // Use TimezoneUtils
+      fechaActualizacion: TimezoneUtils.now(),
+      tipoEvento: _tipoEventoSeleccionado,
     );
 
     final exito = await eventosViewModel.actualizarEvento(widget.evento.id, eventoActualizado);

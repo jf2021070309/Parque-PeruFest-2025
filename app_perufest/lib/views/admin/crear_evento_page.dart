@@ -39,6 +39,9 @@ class _CrearEventoPageState extends State<CrearEventoPage> {
     'Conciertos'
   ];
 
+  String _tipoEventoSeleccionado = 'gratis';
+  final List<String> _tiposEvento = ['gratis', 'pago'];
+
   @override
   void initState() {
     super.initState();
@@ -121,6 +124,32 @@ class _CrearEventoPageState extends State<CrearEventoPage> {
                     _categoriaSeleccionada = value!;
                   });
                 },
+              ),
+              const SizedBox(height: 16),
+              // Tipo de evento
+              Row(
+                children: [
+                  const Icon(Icons.label, color: Colors.blue),
+                  SizedBox(width: 12),
+                  Text('Tipo de evento *:', style: TextStyle(fontWeight: FontWeight.bold)),
+                  SizedBox(width: 16),
+                  Expanded(
+                    child: Row(
+                      children: _tiposEvento.map((tipo) => Expanded(
+                        child: RadioListTile<String>(
+                          title: Text(tipo == 'gratis' ? 'Gratis' : 'De pago'),
+                          value: tipo,
+                          groupValue: _tipoEventoSeleccionado,
+                          onChanged: (value) {
+                            setState(() {
+                              _tipoEventoSeleccionado = value!;
+                            });
+                          },
+                        ),
+                      )).toList(),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 16),
 
@@ -565,6 +594,7 @@ class _CrearEventoPageState extends State<CrearEventoPage> {
       estado: 'activo',
       fechaCreacion: TimezoneUtils.now(),
       fechaActualizacion: TimezoneUtils.now(),
+      tipoEvento: _tipoEventoSeleccionado,
     );
 
     final eventosViewModel = Provider.of<EventosViewModel>(context, listen: false);
