@@ -117,6 +117,7 @@ class _DashboardAdminViewState extends State<DashboardAdminView> {
             label: 'Actividades',
           ),
           BottomNavigationBarItem(icon: Icon(Icons.store), label: 'Stands'),
+          BottomNavigationBarItem(icon: Icon(Icons.event), label: 'Anuncios'),
           BottomNavigationBarItem(icon: Icon(Icons.map), label: 'Zonas'),
           BottomNavigationBarItem(
             icon: Icon(Icons.bar_chart),
