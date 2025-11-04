@@ -4,8 +4,9 @@ import 'admin/noticias_page.dart';
 import 'admin/eventos_page.dart';
 import 'admin/actividades_page.dart';
 import 'admin/stands_page.dart';
-import 'admin/estadisticas_page.dart';
+import 'admin/anuncios_page.dart';
 import 'admin/mapa_admin_view.dart';
+import 'admin/estadisticas_page.dart';
 import 'perfil_administrador_view.dart';
 import '../viewmodels/auth_viewmodel.dart';
 
@@ -19,12 +20,25 @@ class DashboardAdminView extends StatefulWidget {
 class _DashboardAdminViewState extends State<DashboardAdminView> {
   int _currentIndex = 0;
 
-  // Lista de páginas para cada tab
+  // Títulos para cada sección
+  final List<String> _titles = [
+    'Gestión de Noticias',
+    'Gestión de Eventos',
+    'Gestión de Actividades',
+    'Gestión de Stands',
+    'Gestión de Anuncios',
+    'Gestión de Zonas',
+    'Estadísticas',
+    'Mi Perfil',
+  ];
+
+  // Lista de páginas para cada sección
   final List<Widget> _pages = [
     const NoticiasPage(),
     const EventosPage(),
     const ActividadesPage(),
     const StandsPage(),
+    const AnunciosPage(), // Asegúrate de crear esta página
     const MapaAdminView(),
     const EstadisticasPage(),
   ];
@@ -49,47 +63,50 @@ class _DashboardAdminViewState extends State<DashboardAdminView> {
     );
   }
 
-  void _onTabTapped(int index) {
+  void _onMenuItemTapped(int index) {
     setState(() {
       _currentIndex = index;
     });
+    Navigator.pop(context); // Cierra el drawer
   }
 
   void _cerrarSesion() {
     showDialog(
       context: context,
-      builder:
-          (context) => AlertDialog(
-            title: const Text('Cerrar Sesión'),
-            content: const Text('¿Estás seguro de que quieres cerrar sesión?'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Cancelar'),
-              ),
-              TextButton(
-                onPressed: () {
-                  // Usar tu método logout existente
-                  context.read<AuthViewModel>().logout();
-                  Navigator.pop(context);
-                  // Navegar al login
-                  Navigator.pushReplacementNamed(context, '/login');
-                },
-                child: const Text(
-                  'Cerrar Sesión',
-                  style: TextStyle(color: Colors.red),
-                ),
-              ),
-            ],
+      builder: (context) => AlertDialog(
+        title: const Text('Cerrar Sesión'),
+        content: const Text('¿Estás seguro de que quieres cerrar sesión?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar'),
           ),
+          TextButton(
+            onPressed: () {
+              context.read<AuthViewModel>().logout();
+              Navigator.pop(context);
+              Navigator.pushReplacementNamed(context, '/login');
+            },
+            child: const Text(
+              'Cerrar Sesión',
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final authViewModel = context.watch<AuthViewModel>();
+    final currentUser = authViewModel.currentUser;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Dashboard Administrador'),
+        title: Text(_titles[_currentIndex]),
+        backgroundColor: const Color(0xFF8B1B1B),
+        foregroundColor: Colors.white,
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
@@ -98,34 +115,128 @@ class _DashboardAdminViewState extends State<DashboardAdminView> {
           ),
         ],
       ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            DrawerHeader(
+              decoration: const BoxDecoration(
+                color: Color(0xFF8B1B1B),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  CircleAvatar(
+                    radius: 30,
+                    backgroundColor: Colors.white,
+                    backgroundImage: currentUser?.imagenPerfil != null
+                        ? NetworkImage(currentUser!.imagenPerfil!)
+                        : null,
+                    child: currentUser?.imagenPerfil == null
+                        ? const Icon(Icons.person, size: 35, color: Color(0xFF8B1B1B))
+                        : null,
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    currentUser?.username ?? 'Administrador',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    currentUser?.correo ?? '',
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            _buildDrawerItem(
+              icon: Icons.article,
+              title: 'Noticias',
+              index: 0,
+            ),
+            _buildDrawerItem(
+              icon: Icons.event,
+              title: 'Eventos',
+              index: 1,
+            ),
+            _buildDrawerItem(
+              icon: Icons.local_activity,
+              title: 'Actividades',
+              index: 2,
+            ),
+            _buildDrawerItem(
+              icon: Icons.store,
+              title: 'Stands',
+              index: 3,
+            ),
+            _buildDrawerItem(
+              icon: Icons.campaign,
+              title: 'Anuncios',
+              index: 4,
+            ),
+            _buildDrawerItem(
+              icon: Icons.map,
+              title: 'Zonas',
+              index: 5,
+            ),
+            const Divider(),
+            _buildDrawerItem(
+              icon: Icons.bar_chart,
+              title: 'Estadísticas',
+              index: 6,
+            ),
+            _buildDrawerItem(
+              icon: Icons.person,
+              title: 'Mi Perfil',
+              index: 7,
+            ),
+            const Divider(),
+            ListTile(
+              leading: const Icon(Icons.logout, color: Colors.red),
+              title: const Text(
+                'Cerrar Sesión',
+                style: TextStyle(color: Colors.red),
+              ),
+              onTap: _cerrarSesion,
+            ),
+          ],
+        ),
+      ),
       body: SafeArea(
-        child: _currentIndex == 6 ? _buildPerfilPage() : _pages[_currentIndex],
+        child: _currentIndex == 7 ? _buildPerfilPage() : _pages[_currentIndex],
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        currentIndex: _currentIndex,
-        onTap: _onTabTapped,
-        selectedItemColor: const Color(0xFF8B1B1B),
-        unselectedItemColor: Colors.grey.shade600,
-        selectedFontSize: 11,
-        unselectedFontSize: 10,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.article), label: 'Noticias'),
-          BottomNavigationBarItem(icon: Icon(Icons.event), label: 'Eventos'),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.local_activity),
-            label: 'Actividades',
-          ),
-          BottomNavigationBarItem(icon: Icon(Icons.store), label: 'Stands'),
-          BottomNavigationBarItem(icon: Icon(Icons.event), label: 'Anuncios'),
-          BottomNavigationBarItem(icon: Icon(Icons.map), label: 'Zonas'),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.bar_chart),
-            label: 'Estadísticas',
-          ),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Perfil'),
-        ],
+    );
+  }
+
+  Widget _buildDrawerItem({
+    required IconData icon,
+    required String title,
+    required int index,
+  }) {
+    final isSelected = _currentIndex == index;
+    
+    return ListTile(
+      leading: Icon(
+        icon,
+        color: isSelected ? const Color(0xFF8B1B1B) : Colors.grey.shade700,
       ),
+      title: Text(
+        title,
+        style: TextStyle(
+          color: isSelected ? const Color(0xFF8B1B1B) : Colors.black87,
+          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+        ),
+      ),
+      selected: isSelected,
+      selectedTileColor: const Color(0xFF8B1B1B).withOpacity(0.1),
+      onTap: () => _onMenuItemTapped(index),
     );
   }
 }
