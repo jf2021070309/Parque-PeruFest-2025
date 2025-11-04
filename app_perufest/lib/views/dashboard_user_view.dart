@@ -8,6 +8,8 @@ import 'visitante/evento_opciones_view.dart';
 import 'perfil_usuario_view.dart';
 import 'visitante/mapa_view.dart';
 import '../viewmodels/agenda_viewmodel.dart';
+import '../viewmodels/agenda_list_viewmodel.dart';
+import 'visitante/agenda_view.dart';
 
 class DashboardUserView extends StatefulWidget {
   const DashboardUserView({super.key});
@@ -64,7 +66,7 @@ class _DashboardUserViewState extends State<DashboardUserView> {
             _selectedIndex = index;
           });
         },
-        children: [_buildEventosPage(), _buildMapaPage(), _buildAgendaPage(), _buildPerfilPage()],
+        children: [_buildEventosPage(), _buildMapaPage(), const AgendaView(), _buildPerfilPage()],
       ),
       bottomNavigationBar: _buildBottomNavigation(),
     );
