@@ -4,7 +4,7 @@ import 'admin/noticias_page.dart';
 import 'admin/eventos_page.dart';
 import 'admin/actividades_page.dart';
 import 'admin/stands_page.dart';
-import 'admin/anuncios_page.dart';
+import 'admin/anuncios_main_page.dart';
 import 'admin/mapa_admin_view.dart';
 import 'admin/estadisticas_page.dart';
 import 'perfil_administrador_view.dart';
@@ -38,7 +38,7 @@ class _DashboardAdminViewState extends State<DashboardAdminView> {
     const EventosPage(),
     const ActividadesPage(),
     const StandsPage(),
-    const AnunciosPage(), // Asegúrate de crear esta página
+    const AnunciosMainPage(),
     const MapaAdminView(),
     const EstadisticasPage(),
   ];
