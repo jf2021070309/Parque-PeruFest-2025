@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'dart:io';
+import 'dart:convert';
+import 'package:path_provider/path_provider.dart';
+import 'package:open_file/open_file.dart';
 import '../../models/evento.dart';
 import 'actividades_evento_view.dart';
 import 'stands_evento_view.dart';
@@ -115,6 +119,27 @@ class EventoOpcionesView extends StatelessWidget {
                                 ),
                               ),
                             ],
+                          ),
+                          const SizedBox(height: 12),
+                          // Botón para descargar/abrir PDF
+                          SizedBox(
+                            width: 200,
+                            child: ElevatedButton.icon(
+                              icon: const Icon(Icons.picture_as_pdf, size: 18),
+                              label: Text(
+                                _tienePDF() ? 'Abrir Documento PDF' : 'Sin documento disponible',
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: _tienePDF() ? const Color(0xFF8B1B1B) : Colors.grey,
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12)
+                                ),
+                                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                              ),
+                              onPressed: _tienePDF() ? () => _abrirPDF(context) : null,
+                            ),
                           ),
                         ],
                       ),
@@ -314,6 +339,76 @@ class EventoOpcionesView extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  // Método para verificar si el evento tiene PDF
+  bool _tienePDF() {
+    return evento.pdfBase64 != null && evento.pdfBase64!.isNotEmpty;
+  }
+
+  // Método para abrir el PDF desde base64
+  Future<void> _abrirPDF(BuildContext context) async {
+    final messenger = ScaffoldMessenger.of(context);
+    
+    // Mostrar indicador de carga
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return const Center(
+          child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF8B1B1B)),
+          ),
+        );
+      },
+    );
+
+    try {
+      // Decodificar base64 a bytes
+      final bytes = base64Decode(evento.pdfBase64!);
+      
+      // Obtener directorio temporal
+      final dir = await getTemporaryDirectory();
+      final fileName = evento.pdfNombre ?? 'documento_evento_${evento.id}.pdf';
+      final filePath = '${dir.path}/$fileName';
+      
+      // Crear archivo temporal
+      final file = File(filePath);
+      await file.writeAsBytes(bytes, flush: true);
+      
+      // Cerrar indicador de carga
+      Navigator.of(context).pop();
+      
+      // Abrir archivo
+      final result = await OpenFile.open(filePath);
+      
+      // Mostrar mensaje según el resultado
+      if (result.type == ResultType.done) {
+        messenger.showSnackBar(
+          const SnackBar(
+            content: Text('Documento PDF abierto correctamente'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else {
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text('Error al abrir PDF: ${result.message}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      // Cerrar indicador de carga si hay error
+      Navigator.of(context).pop();
+      
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text('Error al procesar el documento: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   String _formatearFecha(DateTime fecha) {

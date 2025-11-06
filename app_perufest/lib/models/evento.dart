@@ -14,6 +14,8 @@ class Evento {
   final DateTime fechaCreacion;
   final DateTime fechaActualizacion;
   final String tipoEvento; // 'gratis' o 'pago'
+  final String? pdfBase64; // PDF en formato base64
+  final String? pdfNombre; // Nombre original del archivo PDF
 
   Evento({
     required this.id,
@@ -30,6 +32,8 @@ class Evento {
     required this.fechaCreacion,
     required this.fechaActualizacion,
     required this.tipoEvento,
+    this.pdfBase64,
+    this.pdfNombre,
   });
 
   // Add getters for Peru timezone
@@ -115,6 +119,8 @@ class Evento {
       fechaCreacion: DateTime.parse(json['fechaCreacion']),
       fechaActualizacion: DateTime.parse(json['fechaActualizacion']),
       tipoEvento: json['tipoEvento'] ?? 'gratis', // default gratis
+      pdfBase64: json['pdfBase64'],
+      pdfNombre: json['pdfNombre'],
     );
   }
 
@@ -133,6 +139,8 @@ class Evento {
       'fechaCreacion': fechaCreacion.toIso8601String(),
       'fechaActualizacion': fechaActualizacion.toIso8601String(),
       'tipoEvento': tipoEvento,
+      if (pdfBase64 != null) 'pdfBase64': pdfBase64,
+      if (pdfNombre != null) 'pdfNombre': pdfNombre,
     };
   }
 
@@ -152,6 +160,8 @@ class Evento {
     DateTime? fechaCreacion,
     DateTime? fechaActualizacion,
     String? tipoEvento,
+    String? pdfBase64,
+    String? pdfNombre,
   }) {
     return Evento(
       id: id ?? this.id,
@@ -168,6 +178,8 @@ class Evento {
       fechaCreacion: fechaCreacion ?? this.fechaCreacion,
       fechaActualizacion: fechaActualizacion ?? this.fechaActualizacion,
       tipoEvento: tipoEvento ?? this.tipoEvento,
+      pdfBase64: pdfBase64 ?? this.pdfBase64,
+      pdfNombre: pdfNombre ?? this.pdfNombre,
     );
   }
 
