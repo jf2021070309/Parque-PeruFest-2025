@@ -1,4 +1,5 @@
 import '../services/timezone.dart';
+
 class Evento {
   final String id;
   final String nombre;
@@ -13,9 +14,9 @@ class Evento {
   final String estado;
   final DateTime fechaCreacion;
   final DateTime fechaActualizacion;
-  final String tipoEvento; // 'gratis' o 'pago'
-  final String? pdfBase64; // PDF en formato base64
-  final String? pdfNombre; // Nombre original del archivo PDF
+  final String tipoEvento;
+  final String? pdfBase64;
+  final String? pdfNombre;
 
   Evento({
     required this.id,
@@ -77,7 +78,7 @@ class Evento {
   String get duracionFormateada {
     final duracion = fechaFinPeruana.difference(fechaInicioPeruana);
     final dias = duracion.inDays;
-    
+
     if (dias == 0) {
       return 'Mismo día';
     } else if (dias == 1) {
@@ -98,7 +99,7 @@ class Evento {
     return ahoraPeru.isAfter(fechaFinPeruana);
   }
 
-  bool get yaEmpezo{
+  bool get yaEmpezo {
     final ahoraPeru = TimezoneUtils.now();
     return ahoraPeru.isAfter(fechaInicioPeruana);
   }

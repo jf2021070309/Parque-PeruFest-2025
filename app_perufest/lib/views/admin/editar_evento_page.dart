@@ -7,7 +7,8 @@ import '../../services/validador_service.dart';
 import '../../services/imgbb_service.dart';
 import '../../services/timezone.dart';
 import 'dart:io';
-  
+import '../../widgets/subir_pdf_widget.dart';
+
 String _tipoEventoSeleccionado = 'gratis';
 final List<String> _tiposEvento = ['gratis', 'pago'];
 
@@ -37,18 +38,17 @@ class _EditarEventoPageState extends State<EditarEventoPage> {
   File? _nuevaImagenSeleccionada;
   bool _subiendoImagen = false;
   bool _imagenCambiada = false;
+  // PDF opcional (base64 + nombre)
+  String? _pdfBase64;
+  String? _pdfNombre;
 
   final List<String> _categorias = [
     'Ferias y Exposiciones',
     'Festivales Culturales',
-    'Conciertos'
+    'Conciertos',
   ];
 
-  final List<String> _estados = [
-    'activo',
-    'cancelado',
-    'finalizado'
-  ];
+  final List<String> _estados = ['activo', 'cancelado', 'finalizado'];
 
   @override
   void initState() {
@@ -57,26 +57,37 @@ class _EditarEventoPageState extends State<EditarEventoPage> {
     _tipoEventoSeleccionado = widget.evento.tipoEvento;
   }
 
-void _cargarDatosEvento() {
-  final evento = widget.evento;
-  _nombreController.text = evento.nombre;
-  _descripcionController.text = evento.descripcion;
-  _organizadorController.text = evento.organizador;
-  _lugarController.text = evento.lugar;
-  _imagenUrlController.text = evento.imagenUrl;
-  _categoriaSeleccionada = evento.categoria;
-  _estadoSeleccionado = evento.estado;
-  _tipoEventoSeleccionado = evento.tipoEvento;
-  
-  // Convert to Peru timezone for display  
-  final fechaInicioPeruana = TimezoneUtils.toPeru(evento.fechaInicio);
-  final fechaFinPeruana = TimezoneUtils.toPeru(evento.fechaFin);
-  
-  _fechaInicio = DateTime(fechaInicioPeruana.year, fechaInicioPeruana.month, fechaInicioPeruana.day);
-  _fechaFin = DateTime(fechaFinPeruana.year, fechaFinPeruana.month, fechaFinPeruana.day);
-  _horaInicio = TimeOfDay.fromDateTime(fechaInicioPeruana);
-  _horaFin = TimeOfDay.fromDateTime(fechaFinPeruana);
-}
+  void _cargarDatosEvento() {
+    final evento = widget.evento;
+    _nombreController.text = evento.nombre;
+    _descripcionController.text = evento.descripcion;
+    _organizadorController.text = evento.organizador;
+    _lugarController.text = evento.lugar;
+    _imagenUrlController.text = evento.imagenUrl;
+    _categoriaSeleccionada = evento.categoria;
+    _estadoSeleccionado = evento.estado;
+    _tipoEventoSeleccionado = evento.tipoEvento;
+
+    // Convert to Peru timezone for display
+    final fechaInicioPeruana = TimezoneUtils.toPeru(evento.fechaInicio);
+    final fechaFinPeruana = TimezoneUtils.toPeru(evento.fechaFin);
+
+    _fechaInicio = DateTime(
+      fechaInicioPeruana.year,
+      fechaInicioPeruana.month,
+      fechaInicioPeruana.day,
+    );
+    _fechaFin = DateTime(
+      fechaFinPeruana.year,
+      fechaFinPeruana.month,
+      fechaFinPeruana.day,
+    );
+    _horaInicio = TimeOfDay.fromDateTime(fechaInicioPeruana);
+    _horaFin = TimeOfDay.fromDateTime(fechaFinPeruana);
+    // Cargar PDF existente (si hay)
+    _pdfBase64 = evento.pdfBase64;
+    _pdfNombre = evento.pdfNombre;
+  }
 
   @override
   void dispose() {
@@ -126,13 +137,21 @@ void _cargarDatosEvento() {
                           ),
                           const SizedBox(width: 12),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
                             decoration: BoxDecoration(
-                              color: widget.evento.tipoEvento == 'gratis' ? Colors.green : Colors.orange,
+                              color:
+                                  widget.evento.tipoEvento == 'gratis'
+                                      ? Colors.green
+                                      : Colors.orange,
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
-                              widget.evento.tipoEvento == 'gratis' ? 'GRATIS' : 'DE PAGO',
+                              widget.evento.tipoEvento == 'gratis'
+                                  ? 'GRATIS'
+                                  : 'DE PAGO',
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
@@ -167,22 +186,32 @@ void _cargarDatosEvento() {
                 children: [
                   const Icon(Icons.label, color: Colors.blue),
                   SizedBox(width: 12),
-                  Text('Tipo de evento *:', style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text(
+                    'Tipo de evento *:',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
                   SizedBox(width: 16),
                   Expanded(
                     child: Row(
-                      children: _tiposEvento.map((tipo) => Expanded(
-                        child: RadioListTile<String>(
-                          title: Text(tipo == 'gratis' ? 'Gratis' : 'De pago'),
-                          value: tipo,
-                          groupValue: _tipoEventoSeleccionado,
-                          onChanged: (value) {
-                            setState(() {
-                              _tipoEventoSeleccionado = value!;
-                            });
-                          },
-                        ),
-                      )).toList(),
+                      children:
+                          _tiposEvento
+                              .map(
+                                (tipo) => Expanded(
+                                  child: RadioListTile<String>(
+                                    title: Text(
+                                      tipo == 'gratis' ? 'Gratis' : 'De pago',
+                                    ),
+                                    value: tipo,
+                                    groupValue: _tipoEventoSeleccionado,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _tipoEventoSeleccionado = value!;
+                                      });
+                                    },
+                                  ),
+                                ),
+                              )
+                              .toList(),
                     ),
                   ),
                 ],
@@ -197,23 +226,28 @@ void _cargarDatosEvento() {
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.flag),
                 ),
-                items: _estados.map((estado) => DropdownMenuItem(
-                      value: estado,
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 12,
-                            height: 12,
-                            decoration: BoxDecoration(
-                              color: _getColorEstado(estado),
-                              shape: BoxShape.circle,
+                items:
+                    _estados
+                        .map(
+                          (estado) => DropdownMenuItem(
+                            value: estado,
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 12,
+                                  height: 12,
+                                  decoration: BoxDecoration(
+                                    color: _getColorEstado(estado),
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(estado.toUpperCase()),
+                              ],
                             ),
                           ),
-                          const SizedBox(width: 8),
-                          Text(estado.toUpperCase()),
-                        ],
-                      ),
-                    )).toList(),
+                        )
+                        .toList(),
                 onChanged: (value) {
                   setState(() {
                     _estadoSeleccionado = value!;
@@ -230,7 +264,9 @@ void _cargarDatosEvento() {
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.event),
                 ),
-                validator: (value) => ValidadorService.validarCampoRequerido(value, 'Nombre'),
+                validator:
+                    (value) =>
+                        ValidadorService.validarCampoRequerido(value, 'Nombre'),
               ),
               const SizedBox(height: 16),
 
@@ -243,7 +279,11 @@ void _cargarDatosEvento() {
                   prefixIcon: Icon(Icons.description),
                 ),
                 maxLines: 3,
-                validator: (value) => ValidadorService.validarCampoRequerido(value, 'Descripción'),
+                validator:
+                    (value) => ValidadorService.validarCampoRequerido(
+                      value,
+                      'Descripción',
+                    ),
               ),
               const SizedBox(height: 16),
 
@@ -255,7 +295,11 @@ void _cargarDatosEvento() {
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.business),
                 ),
-                validator: (value) => ValidadorService.validarCampoRequerido(value, 'Organizador'),
+                validator:
+                    (value) => ValidadorService.validarCampoRequerido(
+                      value,
+                      'Organizador',
+                    ),
               ),
               const SizedBox(height: 16),
 
@@ -267,10 +311,15 @@ void _cargarDatosEvento() {
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.category),
                 ),
-                items: _categorias.map((categoria) => DropdownMenuItem(
-                      value: categoria,
-                      child: Text(categoria),
-                    )).toList(),
+                items:
+                    _categorias
+                        .map(
+                          (categoria) => DropdownMenuItem(
+                            value: categoria,
+                            child: Text(categoria),
+                          ),
+                        )
+                        .toList(),
                 onChanged: (value) {
                   setState(() {
                     _categoriaSeleccionada = value!;
@@ -371,7 +420,9 @@ void _cargarDatosEvento() {
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.location_on),
                 ),
-                validator: (value) => ValidadorService.validarCampoRequerido(value, 'Lugar'),
+                validator:
+                    (value) =>
+                        ValidadorService.validarCampoRequerido(value, 'Lugar'),
               ),
               const SizedBox(height: 16),
 
@@ -385,11 +436,17 @@ void _cargarDatosEvento() {
                         children: [
                           Icon(Icons.image, color: Colors.blue),
                           SizedBox(width: 8),
-                          Text('Imagen del Evento', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                          Text(
+                            'Imagen del Evento',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
                         ],
                       ),
                       const SizedBox(height: 12),
-                      
+
                       // Mostrar imagen (nueva o actual)
                       Container(
                         height: 200,
@@ -400,28 +457,46 @@ void _cargarDatosEvento() {
                         ),
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(8),
-                          child: _nuevaImagenSeleccionada != null
-                              ? Image.file(_nuevaImagenSeleccionada!, fit: BoxFit.cover)
-                              : widget.evento.imagenUrl.isNotEmpty
-                                  ? Image.network(widget.evento.imagenUrl, fit: BoxFit.cover,
-                                      errorBuilder: (context, error, stackTrace) => 
-                                          const Center(child: Icon(Icons.broken_image, size: 48)))
+                          child:
+                              _nuevaImagenSeleccionada != null
+                                  ? Image.file(
+                                    _nuevaImagenSeleccionada!,
+                                    fit: BoxFit.cover,
+                                  )
+                                  : widget.evento.imagenUrl.isNotEmpty
+                                  ? Image.network(
+                                    widget.evento.imagenUrl,
+                                    fit: BoxFit.cover,
+                                    errorBuilder:
+                                        (context, error, stackTrace) =>
+                                            const Center(
+                                              child: Icon(
+                                                Icons.broken_image,
+                                                size: 48,
+                                              ),
+                                            ),
+                                  )
                                   : Container(
-                                      color: Colors.grey.shade50,
-                                      child: const Center(
-                                        child: Column(
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          children: [
-                                            Icon(Icons.image_not_supported, size: 48, color: Colors.grey),
-                                            Text('Sin imagen'),
-                                          ],
-                                        ),
+                                    color: Colors.grey.shade50,
+                                    child: const Center(
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Icon(
+                                            Icons.image_not_supported,
+                                            size: 48,
+                                            color: Colors.grey,
+                                          ),
+                                          Text('Sin imagen'),
+                                        ],
                                       ),
                                     ),
+                                  ),
                         ),
                       ),
                       const SizedBox(height: 12),
-                      
+
                       // Botones
                       Row(
                         children: [
@@ -429,7 +504,8 @@ void _cargarDatosEvento() {
                             child: ElevatedButton(
                               onPressed: _seleccionarNuevaImagen,
                               style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blue),
+                                backgroundColor: Colors.blue,
+                              ),
                               child: const Text('Cambiar imagen'),
                             ),
                           ),
@@ -437,19 +513,21 @@ void _cargarDatosEvento() {
                             const SizedBox(width: 8),
                             Expanded(
                               child: ElevatedButton(
-                                onPressed: () => setState(() {
-                                  _nuevaImagenSeleccionada = null;
-                                  _imagenCambiada = false;
-                                }),
+                                onPressed:
+                                    () => setState(() {
+                                      _nuevaImagenSeleccionada = null;
+                                      _imagenCambiada = false;
+                                    }),
                                 style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.red),
+                                  backgroundColor: Colors.red,
+                                ),
                                 child: const Text('Restaurar'),
                               ),
                             ),
                           ],
                         ],
                       ),
-                      
+
                       if (_subiendoImagen)
                         Container(
                           margin: const EdgeInsets.only(top: 12),
@@ -457,12 +535,31 @@ void _cargarDatosEvento() {
                           color: Colors.blue.shade50,
                           child: const Row(
                             children: [
-                              SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
+                              SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              ),
                               SizedBox(width: 12),
                               Text('Subiendo imagen...'),
                             ],
                           ),
                         ),
+                      const SizedBox(height: 16),
+
+                      // Widget para subir PDF opcional
+                      SubirPDFWidget(
+                        pdfActual: _pdfBase64,
+                        nombreActual: _pdfNombre,
+                        onPDFSelected: (base64, nombre) {
+                          setState(() {
+                            _pdfBase64 = base64.isNotEmpty ? base64 : null;
+                            _pdfNombre = nombre.isNotEmpty ? nombre : null;
+                          });
+                        },
+                      ),
                     ],
                   ),
                 ),
@@ -476,7 +573,8 @@ void _cargarDatosEvento() {
                       child: ElevatedButton.icon(
                         onPressed: () => Navigator.pop(context),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.grey),
+                          backgroundColor: Colors.grey,
+                        ),
                         icon: const Icon(Icons.arrow_back),
                         label: const Text('Atrás'),
                       ),
@@ -486,18 +584,30 @@ void _cargarDatosEvento() {
                       flex: 2,
                       child: Consumer<EventosViewModel>(
                         builder: (context, viewModel, child) {
-                          final estaOcupado = viewModel.isLoading || _subiendoImagen;
+                          final estaOcupado =
+                              viewModel.isLoading || _subiendoImagen;
                           return ElevatedButton.icon(
-                            onPressed: estaOcupado ? null : _actualizarEvento, // <-- usa estaOcupado
-                            style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-                            icon: estaOcupado
-                            ? const SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)
-                                ),
-                              )
-                              :const Icon(Icons.save),
+                            onPressed:
+                                estaOcupado
+                                    ? null
+                                    : _actualizarEvento, // <-- usa estaOcupado
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.green,
+                            ),
+                            icon:
+                                estaOcupado
+                                    ? const SizedBox(
+                                      height: 20,
+                                      width: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                              Colors.white,
+                                            ),
+                                      ),
+                                    )
+                                    : const Icon(Icons.save),
                             label: const Text('Guardar Cambios'),
                           );
                         },
@@ -512,6 +622,7 @@ void _cargarDatosEvento() {
       ),
     );
   }
+
   bool _pickerActivo = false;
   Future<void> _seleccionarNuevaImagen() async {
     if (_pickerActivo) return; // Evita abrir dos veces
@@ -521,31 +632,32 @@ void _cargarDatosEvento() {
 
     try {
       final ImagePicker picker = ImagePicker();
-      
+
       // Mostrar opciones de selección
       final opcion = await showModalBottomSheet<String>(
         context: context,
-        builder: (context) => SafeArea(
-          child: Wrap(
-            children: [
-              ListTile(
-                leading: const Icon(Icons.camera_alt),
-                title: const Text('Tomar foto'),
-                onTap: () => Navigator.pop(context, 'camera'),
+        builder:
+            (context) => SafeArea(
+              child: Wrap(
+                children: [
+                  ListTile(
+                    leading: const Icon(Icons.camera_alt),
+                    title: const Text('Tomar foto'),
+                    onTap: () => Navigator.pop(context, 'camera'),
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.photo_library),
+                    title: const Text('Seleccionar de galería'),
+                    onTap: () => Navigator.pop(context, 'gallery'),
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.cancel),
+                    title: const Text('Cancelar'),
+                    onTap: () => Navigator.pop(context),
+                  ),
+                ],
               ),
-              ListTile(
-                leading: const Icon(Icons.photo_library),
-                title: const Text('Seleccionar de galería'),
-                onTap: () => Navigator.pop(context, 'gallery'),
-              ),
-              ListTile(
-                leading: const Icon(Icons.cancel),
-                title: const Text('Cancelar'),
-                onTap: () => Navigator.pop(context),
-              ),
-            ],
-          ),
-        ),
+            ),
       );
 
       if (opcion != null) {
@@ -555,7 +667,7 @@ void _cargarDatosEvento() {
           maxHeight: 1080,
           imageQuality: 85,
         );
-        
+
         if (imagen != null) {
           setState(() {
             _nuevaImagenSeleccionada = File(imagen.path);
@@ -577,7 +689,7 @@ void _cargarDatosEvento() {
     if (_nuevaImagenSeleccionada == null) return widget.evento.imagenUrl;
 
     setState(() => _subiendoImagen = true);
-    
+
     try {
       return await ImgBBService.subirImagenFormData(_nuevaImagenSeleccionada!);
     } catch (e) {
@@ -591,7 +703,10 @@ void _cargarDatosEvento() {
   Future<void> _seleccionarFecha(BuildContext context, bool esInicio) async {
     final fechaSeleccionada = await showDatePicker(
       context: context,
-      initialDate: esInicio ? _fechaInicio ?? TimezoneUtils.today() : _fechaFin ?? TimezoneUtils.today(),
+      initialDate:
+          esInicio
+              ? _fechaInicio ?? TimezoneUtils.today()
+              : _fechaFin ?? TimezoneUtils.today(),
       firstDate: TimezoneUtils.today().subtract(const Duration(days: 365)),
       lastDate: TimezoneUtils.today().add(const Duration(days: 365)),
     );
@@ -611,9 +726,10 @@ void _cargarDatosEvento() {
     final ahora = TimezoneUtils.now();
     final horaSeleccionada = await showTimePicker(
       context: context,
-      initialTime: esInicio 
-          ? _horaInicio ?? TimeOfDay.fromDateTime(ahora)
-          : _horaFin ?? TimeOfDay.fromDateTime(ahora),
+      initialTime:
+          esInicio
+              ? _horaInicio ?? TimeOfDay.fromDateTime(ahora)
+              : _horaFin ?? TimeOfDay.fromDateTime(ahora),
     );
 
     if (horaSeleccionada != null) {
@@ -630,7 +746,10 @@ void _cargarDatosEvento() {
   Future<void> _actualizarEvento() async {
     if (!_validarFormulario()) return;
 
-    final eventosViewModel = Provider.of<EventosViewModel>(context, listen: false);
+    final eventosViewModel = Provider.of<EventosViewModel>(
+      context,
+      listen: false,
+    );
 
     // Use TimezoneUtils instead of DateTime
     final fechaInicioCompleta = TimezoneUtils.create(
@@ -650,7 +769,9 @@ void _cargarDatosEvento() {
     );
 
     String? imagenUrlFinal = await _subirNuevaImagenSiEsNecesario();
-    if (_imagenCambiada && _nuevaImagenSeleccionada != null && imagenUrlFinal == null) {
+    if (_imagenCambiada &&
+        _nuevaImagenSeleccionada != null &&
+        imagenUrlFinal == null) {
       return; // Error al subir imagen
     }
 
@@ -666,9 +787,14 @@ void _cargarDatosEvento() {
       estado: _estadoSeleccionado,
       fechaActualizacion: TimezoneUtils.now(),
       tipoEvento: _tipoEventoSeleccionado,
+      pdfBase64: _pdfBase64,
+      pdfNombre: _pdfNombre,
     );
 
-    final exito = await eventosViewModel.actualizarEvento(widget.evento.id, eventoActualizado);
+    final exito = await eventosViewModel.actualizarEvento(
+      widget.evento.id,
+      eventoActualizado,
+    );
 
     if (exito && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -676,51 +802,51 @@ void _cargarDatosEvento() {
       );
       Navigator.pop(context, true);
     } else if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(eventosViewModel.errorMessage)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(eventosViewModel.errorMessage)));
     }
   }
 
-bool _validarFormulario() {
-  if (!_formKey.currentState!.validate()) return false;
+  bool _validarFormulario() {
+    if (!_formKey.currentState!.validate()) return false;
 
-  if (_fechaInicio == null) {
-    _mostrarError('Selecciona la fecha de inicio');
-    return false;
-  }
+    if (_fechaInicio == null) {
+      _mostrarError('Selecciona la fecha de inicio');
+      return false;
+    }
 
-  if (_horaInicio == null) {
-    _mostrarError('Selecciona la hora de inicio');
-    return false;
-  }
+    if (_horaInicio == null) {
+      _mostrarError('Selecciona la hora de inicio');
+      return false;
+    }
 
-  if (_fechaFin == null) {
-    _mostrarError('Selecciona la fecha de fin');
-    return false;
-  }
+    if (_fechaFin == null) {
+      _mostrarError('Selecciona la fecha de fin');
+      return false;
+    }
 
-  if (_horaFin == null) {
-    _mostrarError('Selecciona la hora de fin');
-    return false;
-  }
+    if (_horaFin == null) {
+      _mostrarError('Selecciona la hora de fin');
+      return false;
+    }
 
-  // Use TimezoneUtils instead of DateTime
-  final fechaInicioCompleta = TimezoneUtils.create(
-    _fechaInicio!.year,
-    _fechaInicio!.month,
-    _fechaInicio!.day,
-    _horaInicio!.hour,
-    _horaInicio!.minute,
-  );
+    // Use TimezoneUtils instead of DateTime
+    final fechaInicioCompleta = TimezoneUtils.create(
+      _fechaInicio!.year,
+      _fechaInicio!.month,
+      _fechaInicio!.day,
+      _horaInicio!.hour,
+      _horaInicio!.minute,
+    );
 
-  final fechaFinCompleta = TimezoneUtils.create(
-    _fechaFin!.year,
-    _fechaFin!.month,
-    _fechaFin!.day,
-    _horaFin!.hour,
-    _horaFin!.minute,
-  );
+    final fechaFinCompleta = TimezoneUtils.create(
+      _fechaFin!.year,
+      _fechaFin!.month,
+      _fechaFin!.day,
+      _horaFin!.hour,
+      _horaFin!.minute,
+    );
 
     if (fechaFinCompleta.isBefore(fechaInicioCompleta)) {
       _mostrarError('La fecha de fin debe ser posterior a la fecha de inicio');
@@ -731,33 +857,40 @@ bool _validarFormulario() {
   }
 
   void _mostrarError(String mensaje) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(mensaje)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(mensaje)));
   }
 
   void _mostrarInformacionEvento() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Información del Evento'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildInfoRow('ID:', widget.evento.id),
-            _buildInfoRow('Creado por:', widget.evento.creadoPor),
-            _buildInfoRow('Fecha creación:', _formatearFecha(widget.evento.fechaCreacion)),
-            _buildInfoRow('Última actualización:', _formatearFecha(widget.evento.fechaActualizacion)),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cerrar'),
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Información del Evento'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildInfoRow('ID:', widget.evento.id),
+                _buildInfoRow('Creado por:', widget.evento.creadoPor),
+                _buildInfoRow(
+                  'Fecha creación:',
+                  _formatearFecha(widget.evento.fechaCreacion),
+                ),
+                _buildInfoRow(
+                  'Última actualización:',
+                  _formatearFecha(widget.evento.fechaActualizacion),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cerrar'),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 

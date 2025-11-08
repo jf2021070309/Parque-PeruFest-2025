@@ -8,6 +8,7 @@ import '../../viewmodels/auth_viewmodel.dart';
 import '../../services/validador_service.dart';
 import '../../services/imgbb_service.dart';
 import '../../services/timezone.dart';
+import '../../widgets/subir_pdf_widget.dart';
 
 class CrearEventoPage extends StatefulWidget {
   const CrearEventoPage({super.key});
@@ -28,15 +29,18 @@ class _CrearEventoPageState extends State<CrearEventoPage> {
   TimeOfDay? _horaInicio;
   DateTime? _fechaFin;
   TimeOfDay? _horaFin;
-  
+
   // Variables para imagen
   File? _imagenSeleccionada;
   bool _subiendoImagen = false;
+  // PDF opcional (base64 + nombre)
+  String? _pdfBase64;
+  String? _pdfNombre;
 
   final List<String> _categorias = [
     'Ferias y Exposiciones',
     'Festivales Culturales',
-    'Conciertos'
+    'Conciertos',
   ];
 
   String _tipoEventoSeleccionado = 'gratis';
@@ -60,9 +64,7 @@ class _CrearEventoPageState extends State<CrearEventoPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Crear Evento'),
-      ),
+      appBar: AppBar(title: const Text('Crear Evento')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Form(
@@ -78,7 +80,9 @@ class _CrearEventoPageState extends State<CrearEventoPage> {
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.event),
                 ),
-                validator: (value) => ValidadorService.validarCampoRequerido(value, 'Nombre'),
+                validator:
+                    (value) =>
+                        ValidadorService.validarCampoRequerido(value, 'Nombre'),
               ),
               const SizedBox(height: 16),
 
@@ -91,7 +95,11 @@ class _CrearEventoPageState extends State<CrearEventoPage> {
                   prefixIcon: Icon(Icons.description),
                 ),
                 maxLines: 3,
-                validator: (value) => ValidadorService.validarCampoRequerido(value, 'Descripción'),
+                validator:
+                    (value) => ValidadorService.validarCampoRequerido(
+                      value,
+                      'Descripción',
+                    ),
               ),
               const SizedBox(height: 16),
 
@@ -103,7 +111,11 @@ class _CrearEventoPageState extends State<CrearEventoPage> {
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.business),
                 ),
-                validator: (value) => ValidadorService.validarCampoRequerido(value, 'Organizador'),
+                validator:
+                    (value) => ValidadorService.validarCampoRequerido(
+                      value,
+                      'Organizador',
+                    ),
               ),
               const SizedBox(height: 16),
 
@@ -115,10 +127,15 @@ class _CrearEventoPageState extends State<CrearEventoPage> {
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.category),
                 ),
-                items: _categorias.map((categoria) => DropdownMenuItem(
-                      value: categoria,
-                      child: Text(categoria),
-                    )).toList(),
+                items:
+                    _categorias
+                        .map(
+                          (categoria) => DropdownMenuItem(
+                            value: categoria,
+                            child: Text(categoria),
+                          ),
+                        )
+                        .toList(),
                 onChanged: (value) {
                   setState(() {
                     _categoriaSeleccionada = value!;
@@ -131,22 +148,32 @@ class _CrearEventoPageState extends State<CrearEventoPage> {
                 children: [
                   const Icon(Icons.label, color: Colors.blue),
                   SizedBox(width: 12),
-                  Text('Tipo de evento *:', style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text(
+                    'Tipo de evento *:',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
                   SizedBox(width: 16),
                   Expanded(
                     child: Row(
-                      children: _tiposEvento.map((tipo) => Expanded(
-                        child: RadioListTile<String>(
-                          title: Text(tipo == 'gratis' ? 'Gratis' : 'De pago'),
-                          value: tipo,
-                          groupValue: _tipoEventoSeleccionado,
-                          onChanged: (value) {
-                            setState(() {
-                              _tipoEventoSeleccionado = value!;
-                            });
-                          },
-                        ),
-                      )).toList(),
+                      children:
+                          _tiposEvento
+                              .map(
+                                (tipo) => Expanded(
+                                  child: RadioListTile<String>(
+                                    title: Text(
+                                      tipo == 'gratis' ? 'Gratis' : 'De pago',
+                                    ),
+                                    value: tipo,
+                                    groupValue: _tipoEventoSeleccionado,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _tipoEventoSeleccionado = value!;
+                                      });
+                                    },
+                                  ),
+                                ),
+                              )
+                              .toList(),
                     ),
                   ),
                 ],
@@ -246,7 +273,9 @@ class _CrearEventoPageState extends State<CrearEventoPage> {
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.location_on),
                 ),
-                validator: (value) => ValidadorService.validarCampoRequerido(value, 'Lugar'),
+                validator:
+                    (value) =>
+                        ValidadorService.validarCampoRequerido(value, 'Lugar'),
               ),
               const SizedBox(height: 16),
 
@@ -294,7 +323,9 @@ class _CrearEventoPageState extends State<CrearEventoPage> {
                             Expanded(
                               child: ElevatedButton.icon(
                                 onPressed: _cambiarImagen,
-                                style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.green,
+                                ),
                                 icon: const Icon(Icons.refresh),
                                 label: const Text('Cambiar imagen'),
                               ),
@@ -303,7 +334,9 @@ class _CrearEventoPageState extends State<CrearEventoPage> {
                             Expanded(
                               child: ElevatedButton.icon(
                                 onPressed: _eliminarImagen,
-                                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.red,
+                                ),
                                 icon: const Icon(Icons.delete),
                                 label: const Text('Quitar'),
                               ),
@@ -368,7 +401,9 @@ class _CrearEventoPageState extends State<CrearEventoPage> {
                               SizedBox(
                                 width: 20,
                                 height: 20,
-                                child: CircularProgressIndicator(strokeWidth: 2),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
                               ),
                               SizedBox(width: 12),
                               Text('Subiendo imagen...'),
@@ -382,6 +417,18 @@ class _CrearEventoPageState extends State<CrearEventoPage> {
               ),
               const SizedBox(height: 24),
 
+              // Widget para subir PDF opcional (una página)
+              SubirPDFWidget(
+                pdfActual: _pdfBase64,
+                nombreActual: _pdfNombre,
+                onPDFSelected: (base64, nombre) {
+                  setState(() {
+                    _pdfBase64 = base64.isNotEmpty ? base64 : null;
+                    _pdfNombre = nombre.isNotEmpty ? nombre : null;
+                  });
+                },
+              ),
+
               // Botón crear evento
               SafeArea(
                 child: Consumer<EventosViewModel>(
@@ -392,26 +439,29 @@ class _CrearEventoPageState extends State<CrearEventoPage> {
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                       ),
-                      child: estaOcupado
-                          ? Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: Colors.white,
+                      child:
+                          estaOcupado
+                              ? Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(width: 12),
-                                Text(_subiendoImagen 
-                                    ? 'Subiendo imagen...' 
-                                    : 'Creando evento...'),
-                              ],
-                            )
-                          : const Text('Crear Evento'),
+                                  const SizedBox(width: 12),
+                                  Text(
+                                    _subiendoImagen
+                                        ? 'Subiendo imagen...'
+                                        : 'Creando evento...',
+                                  ),
+                                ],
+                              )
+                              : const Text('Crear Evento'),
                     );
                   },
                 ),
@@ -426,31 +476,32 @@ class _CrearEventoPageState extends State<CrearEventoPage> {
   Future<void> _seleccionarImagen() async {
     try {
       final ImagePicker picker = ImagePicker();
-      
+
       // Mostrar opciones de selección
       final opcion = await showModalBottomSheet<String>(
         context: context,
-        builder: (context) => SafeArea(
-          child: Wrap(
-            children: [
-              ListTile(
-                leading: const Icon(Icons.camera_alt),
-                title: const Text('Tomar foto'),
-                onTap: () => Navigator.pop(context, 'camera'),
+        builder:
+            (context) => SafeArea(
+              child: Wrap(
+                children: [
+                  ListTile(
+                    leading: const Icon(Icons.camera_alt),
+                    title: const Text('Tomar foto'),
+                    onTap: () => Navigator.pop(context, 'camera'),
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.photo_library),
+                    title: const Text('Seleccionar de galería'),
+                    onTap: () => Navigator.pop(context, 'gallery'),
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.cancel),
+                    title: const Text('Cancelar'),
+                    onTap: () => Navigator.pop(context),
+                  ),
+                ],
               ),
-              ListTile(
-                leading: const Icon(Icons.photo_library),
-                title: const Text('Seleccionar de galería'),
-                onTap: () => Navigator.pop(context, 'gallery'),
-              ),
-              ListTile(
-                leading: const Icon(Icons.cancel),
-                title: const Text('Cancelar'),
-                onTap: () => Navigator.pop(context),
-              ),
-            ],
-          ),
-        ),
+            ),
       );
 
       if (opcion != null) {
@@ -464,7 +515,7 @@ class _CrearEventoPageState extends State<CrearEventoPage> {
         if (imagen != null) {
           setState(() {
             _imagenSeleccionada = File(imagen.path);
-// Limpiar URL anterior si existía
+            // Limpiar URL anterior si existía
           });
         }
       }
@@ -506,6 +557,7 @@ class _CrearEventoPageState extends State<CrearEventoPage> {
       }
     }
   }
+
   Future<void> _seleccionarFecha(BuildContext context, bool esInicio) async {
     final fechaSeleccionada = await showDatePicker(
       context: context,
@@ -548,7 +600,7 @@ class _CrearEventoPageState extends State<CrearEventoPage> {
 
     final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
     final currentUser = authViewModel.currentUser;
-    
+
     if (currentUser == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Error: Usuario no autenticado')),
@@ -595,9 +647,14 @@ class _CrearEventoPageState extends State<CrearEventoPage> {
       fechaCreacion: TimezoneUtils.now(),
       fechaActualizacion: TimezoneUtils.now(),
       tipoEvento: _tipoEventoSeleccionado,
+      pdfBase64: _pdfBase64,
+      pdfNombre: _pdfNombre,
     );
 
-    final eventosViewModel = Provider.of<EventosViewModel>(context, listen: false);
+    final eventosViewModel = Provider.of<EventosViewModel>(
+      context,
+      listen: false,
+    );
     final exito = await eventosViewModel.crearEvento(evento);
 
     if (exito && mounted) {
@@ -606,9 +663,9 @@ class _CrearEventoPageState extends State<CrearEventoPage> {
       );
       Navigator.pop(context);
     } else if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(eventosViewModel.errorMessage)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(eventosViewModel.errorMessage)));
     }
   }
 
@@ -661,9 +718,8 @@ class _CrearEventoPageState extends State<CrearEventoPage> {
   }
 
   void _mostrarError(String mensaje) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(mensaje)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(mensaje)));
   }
 }
-

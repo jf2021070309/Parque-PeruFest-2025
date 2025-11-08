@@ -46,19 +46,17 @@ class EventoOpcionesView extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              const Color(0xFF8B1B1B).withOpacity(0.1),
-              Colors.white,
-            ],
+            colors: [const Color(0xFF8B1B1B).withOpacity(0.1), Colors.white],
           ),
         ),
         child: SafeArea(
           child: SingleChildScrollView(
             child: ConstrainedBox(
               constraints: BoxConstraints(
-                minHeight: MediaQuery.of(context).size.height - 
-                          MediaQuery.of(context).padding.top - 
-                          kToolbarHeight,
+                minHeight:
+                    MediaQuery.of(context).size.height -
+                    MediaQuery.of(context).padding.top -
+                    kToolbarHeight,
               ),
               child: Padding(
                 padding: const EdgeInsets.all(20.0),
@@ -121,25 +119,47 @@ class EventoOpcionesView extends StatelessWidget {
                             ],
                           ),
                           const SizedBox(height: 12),
-                          // Botón para descargar/abrir PDF
+                          // Botón para ver información detallada (PDF)
                           SizedBox(
-                            width: 200,
+                            width: 220,
                             child: ElevatedButton.icon(
                               icon: const Icon(Icons.picture_as_pdf, size: 18),
                               label: Text(
-                                _tienePDF() ? 'Abrir Documento PDF' : 'Sin documento disponible',
-                                style: const TextStyle(fontSize: 12),
+                                _tienePDF()
+                                    ? 'Ver información detallada'
+                                    : 'Sin información adicional',
+                                style: const TextStyle(fontSize: 13),
                               ),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: _tienePDF() ? const Color(0xFF8B1B1B) : Colors.grey,
+                                backgroundColor:
+                                    _tienePDF()
+                                        ? const Color(0xFF8B1B1B)
+                                        : Colors.grey,
                                 foregroundColor: Colors.white,
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12)
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
-                                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 10,
+                                  horizontal: 14,
+                                ),
                               ),
-                              onPressed: _tienePDF() ? () => _abrirPDF(context) : null,
+                              onPressed:
+                                  _tienePDF() ? () => _abrirPDF(context) : null,
                             ),
+                          ),
+
+                          const SizedBox(height: 8),
+                          // Texto referencial bajo el botón
+                          Text(
+                            _tienePDF()
+                                ? 'Documento con información más detallada del evento.'
+                                : 'No hay documento adicional disponible para este evento.',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey.shade700,
+                            ),
+                            textAlign: TextAlign.center,
                           ),
                         ],
                       ),
@@ -185,7 +205,8 @@ class EventoOpcionesView extends StatelessWidget {
                               context: context,
                               icon: Icons.store,
                               title: 'Stands',
-                              subtitle: 'Explora los stands y empresas participantes',
+                              subtitle:
+                                  'Explora los stands y empresas participantes',
                               color: const Color(0xFFA52A2A),
                               onTap: () => _navegarAStands(context),
                             ),
@@ -258,11 +279,7 @@ class EventoOpcionesView extends StatelessWidget {
                       color: Colors.white.withOpacity(0.2),
                       borderRadius: BorderRadius.circular(50),
                     ),
-                    child: Icon(
-                      icon,
-                      size: 32,
-                      color: Colors.white,
-                    ),
+                    child: Icon(icon, size: 32, color: Colors.white),
                   ),
                   const SizedBox(height: 16),
                   Flexible(
@@ -322,10 +339,8 @@ class EventoOpcionesView extends StatelessWidget {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => ActividadesEventoView(
-          evento: evento,
-          userId: userId,
-        ),
+        builder:
+            (context) => ActividadesEventoView(evento: evento, userId: userId),
       ),
     );
   }
@@ -333,11 +348,7 @@ class EventoOpcionesView extends StatelessWidget {
   void _navegarAStands(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => StandsEventoView(
-          evento: evento,
-        ),
-      ),
+      MaterialPageRoute(builder: (context) => StandsEventoView(evento: evento)),
     );
   }
 
@@ -349,7 +360,7 @@ class EventoOpcionesView extends StatelessWidget {
   // Método para abrir el PDF desde base64
   Future<void> _abrirPDF(BuildContext context) async {
     final messenger = ScaffoldMessenger.of(context);
-    
+
     // Mostrar indicador de carga
     showDialog(
       context: context,
@@ -366,22 +377,22 @@ class EventoOpcionesView extends StatelessWidget {
     try {
       // Decodificar base64 a bytes
       final bytes = base64Decode(evento.pdfBase64!);
-      
+
       // Obtener directorio temporal
       final dir = await getTemporaryDirectory();
       final fileName = evento.pdfNombre ?? 'documento_evento_${evento.id}.pdf';
       final filePath = '${dir.path}/$fileName';
-      
+
       // Crear archivo temporal
       final file = File(filePath);
       await file.writeAsBytes(bytes, flush: true);
-      
+
       // Cerrar indicador de carga
       Navigator.of(context).pop();
-      
+
       // Abrir archivo
       final result = await OpenFile.open(filePath);
-      
+
       // Mostrar mensaje según el resultado
       if (result.type == ResultType.done) {
         messenger.showSnackBar(
@@ -401,7 +412,7 @@ class EventoOpcionesView extends StatelessWidget {
     } catch (e) {
       // Cerrar indicador de carga si hay error
       Navigator.of(context).pop();
-      
+
       messenger.showSnackBar(
         SnackBar(
           content: Text('Error al procesar el documento: $e'),
