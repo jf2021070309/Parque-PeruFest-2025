@@ -5,6 +5,7 @@ import 'admin/eventos_page.dart';
 import 'admin/actividades_page.dart';
 import 'admin/stands_page.dart';
 import 'admin/anuncios_main_page.dart';
+import 'admin/faq_admin_simple.dart';
 import 'admin/mapa_admin_view.dart';
 import 'admin/estadisticas_page.dart';
 import 'perfil_administrador_view.dart';
@@ -27,6 +28,7 @@ class _DashboardAdminViewState extends State<DashboardAdminView> {
     'Gestión de Actividades',
     'Gestión de Stands',
     'Gestión de Anuncios',
+    'Gestión de FAQs',
     'Gestión de Zonas',
     'Estadísticas',
     'Mi Perfil',
@@ -39,6 +41,7 @@ class _DashboardAdminViewState extends State<DashboardAdminView> {
     const ActividadesPage(),
     const StandsPage(),
     const AnunciosMainPage(),
+    const FAQAdminSimple(),
     const MapaAdminView(),
     const EstadisticasPage(),
   ];
@@ -182,20 +185,25 @@ class _DashboardAdminViewState extends State<DashboardAdminView> {
               index: 4,
             ),
             _buildDrawerItem(
+              icon: Icons.help_center,
+              title: 'FAQs',
+              index: 5,
+            ),
+            _buildDrawerItem(
               icon: Icons.map,
               title: 'Zonas',
-              index: 5,
+              index: 6,
             ),
             const Divider(),
             _buildDrawerItem(
               icon: Icons.bar_chart,
               title: 'Estadísticas',
-              index: 6,
+              index: 7,
             ),
             _buildDrawerItem(
               icon: Icons.person,
               title: 'Mi Perfil',
-              index: 7,
+              index: 8,
             ),
             const Divider(),
             ListTile(
@@ -210,7 +218,7 @@ class _DashboardAdminViewState extends State<DashboardAdminView> {
         ),
       ),
       body: SafeArea(
-        child: _currentIndex == 7 ? _buildPerfilPage() : _pages[_currentIndex],
+        child: _currentIndex == 8 ? _buildPerfilPage() : _pages[_currentIndex],
       ),
     );
   }

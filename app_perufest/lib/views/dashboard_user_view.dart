@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
 import '../models/evento.dart';
 import '../viewmodels/eventos_viewmodel.dart';
@@ -7,8 +6,7 @@ import '../viewmodels/auth_viewmodel.dart';
 import 'visitante/evento_opciones_view.dart';
 import 'perfil_usuario_view.dart';
 import 'visitante/mapa_view.dart';
-import '../viewmodels/agenda_viewmodel.dart';
-import '../viewmodels/agenda_list_viewmodel.dart';
+import 'visitante/faq_visitante_simple.dart';
 import 'visitante/agenda_view.dart';
 
 class DashboardUserView extends StatefulWidget {
@@ -66,7 +64,7 @@ class _DashboardUserViewState extends State<DashboardUserView> {
             _selectedIndex = index;
           });
         },
-        children: [_buildEventosPage(), _buildMapaPage(), const AgendaView(), _buildPerfilPage()],
+        children: [_buildEventosPage(), _buildMapaPage(), const AgendaView(), const FAQVisitanteSimple(), _buildPerfilPage()],
       ),
       bottomNavigationBar: _buildBottomNavigation(),
     );
@@ -435,110 +433,9 @@ class _DashboardUserViewState extends State<DashboardUserView> {
     );
   }
 
-  Widget _buildAgendaPage() {
-    final authViewModel = context.watch<AuthViewModel>();
-    final agendaViewModel = context.watch<AgendaViewModel>();
-    final userId = authViewModel.currentUser?.id ?? '';
 
-  if (userId.isEmpty) {
-    return const Center(child: CircularProgressIndicator());
-  }
 
-    // Configura el usuario en el viewmodel si no está configurado
-    if (agendaViewModel.userId != userId && userId.isNotEmpty) {
-      agendaViewModel.configurarUsuario(userId);
-    }
 
-    return FutureBuilder<DocumentSnapshot>(
-      future: FirebaseFirestore.instance.collection('agenda_usuarios').doc(userId).get(),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        final data = snapshot.data!.data() as Map<String, dynamic>? ?? {};
-        final actividades = List<String>.from(data['actividades'] ?? []);
-        final detalles = Map<String, dynamic>.from(data['detalles'] ?? {});
-
-        if (actividades.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.event_busy, size: 80, color: Colors.grey.shade400),
-                const SizedBox(height: 16),
-                Text('No tienes actividades en tu agenda',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.grey.shade600)),
-              ],
-            ),
-          );
-        }
-
-        // Ordenar por fechaInicio más próxima
-        final actividadesOrdenadas = actividades.map((id) {
-          final detalle = detalles[id] ?? {};
-          return {'id': id, 'detalle': detalle};
-        }).toList();
-
-        actividadesOrdenadas.sort((a, b) {
-          final fechaA = (a['detalle']['fechaInicio'] as Timestamp?)?.toDate() ?? DateTime.now();
-          final fechaB = (b['detalle']['fechaInicio'] as Timestamp?)?.toDate() ?? DateTime.now();
-          return fechaA.compareTo(fechaB);
-        });
-
-        return ListView.builder(
-          itemCount: actividadesOrdenadas.length,
-          itemBuilder: (context, index) {
-            final actividadId = actividadesOrdenadas[index]['id'];
-            final detalle = actividadesOrdenadas[index]['detalle'];
-            final fechaInicio = (detalle['fechaInicio'] as Timestamp?)?.toDate();
-            final nombre = detalle['nombre'] ?? '';
-            final zona = detalle['zona'] ?? '';
-            final tiempoRestante = fechaInicio != null
-                ? fechaInicio.difference(DateTime.now())
-                : Duration.zero;
-
-            String tiempoTexto;
-            if (tiempoRestante.isNegative) {
-              tiempoTexto = 'Ya inició';
-            } else if (tiempoRestante.inDays > 0) {
-              tiempoTexto = '${tiempoRestante.inDays} días';
-            } else if (tiempoRestante.inHours > 0) {
-              tiempoTexto = '${tiempoRestante.inHours} horas';
-            } else {
-              tiempoTexto = '${tiempoRestante.inMinutes} minutos';
-            }
-
-            return Card(
-              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: ListTile(
-                title: Text(nombre, style: const TextStyle(fontWeight: FontWeight.bold)),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Zona: $zona'),
-                    if (fechaInicio != null)
-                      Text('Inicio: ${_formatearFechaHora(fechaInicio)}'),
-                    Text('Tiempo restante: $tiempoTexto'),
-                  ],
-                ),
-                trailing: IconButton(
-                  icon: const Icon(Icons.remove_circle, color: Colors.red),
-                  onPressed: () async {
-                    await agendaViewModel.alternarActividadEnAgenda(actividadId);
-                  },
-                  tooltip: 'Quitar de agenda',
-                ),
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
-  String _formatearFechaHora(DateTime fecha) {
-    return '${fecha.day}/${fecha.month}/${fecha.year} ${fecha.hour.toString().padLeft(2, '0')}:${fecha.minute.toString().padLeft(2, '0')}';
-  }
 
   Widget _buildPerfilPage() {
     final authViewModel = context.watch<AuthViewModel>();
@@ -578,7 +475,7 @@ class _DashboardUserViewState extends State<DashboardUserView> {
       child: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: (index) {
-          if (index == 4) {
+          if (index == 5) {
             _mostrarMenuCerrarSesion();
             return;
           }
@@ -613,7 +510,11 @@ class _DashboardUserViewState extends State<DashboardUserView> {
             icon: Icon(Icons.event_note), // Icono de agenda
             label: 'Agenda',
           ),
-
+          BottomNavigationBarItem(
+            icon: Icon(Icons.help_center_outlined),
+            activeIcon: Icon(Icons.help_center),
+            label: 'FAQ',
+          ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person_outline),
             activeIcon: Icon(Icons.person),
