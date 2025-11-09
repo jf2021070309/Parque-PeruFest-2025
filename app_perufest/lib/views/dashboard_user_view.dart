@@ -8,6 +8,7 @@ import 'perfil_usuario_view.dart';
 import 'visitante/mapa_view.dart';
 import 'visitante/faq_visitante_simple.dart';
 import 'visitante/agenda_view.dart';
+import 'visitante/noticias_visitante_view.dart';
 
 class DashboardUserView extends StatefulWidget {
   const DashboardUserView({super.key});
@@ -64,7 +65,7 @@ class _DashboardUserViewState extends State<DashboardUserView> {
             _selectedIndex = index;
           });
         },
-        children: [_buildEventosPage(), _buildMapaPage(), const AgendaView(), const FAQVisitanteSimple(), _buildPerfilPage()],
+        children: [_buildEventosPage(), const NoticiasVisitanteView(), _buildMapaPage(), const AgendaView(), const FAQVisitanteSimple(), _buildPerfilPage()],
       ),
       bottomNavigationBar: _buildBottomNavigation(),
     );
@@ -475,7 +476,7 @@ class _DashboardUserViewState extends State<DashboardUserView> {
       child: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: (index) {
-          if (index == 5) {
+          if (index == 6) {
             _mostrarMenuCerrarSesion();
             return;
           }
@@ -499,6 +500,11 @@ class _DashboardUserViewState extends State<DashboardUserView> {
             icon: Icon(Icons.celebration),
             activeIcon: Icon(Icons.celebration),
             label: 'Eventos',
+          ),
+          BottomNavigationBarItem( // ← NUEVA PESTAÑA
+            icon: Icon(Icons.article_outlined),
+            activeIcon: Icon(Icons.article),
+            label: 'Noticias',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.map_outlined),

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../viewmodels/agenda_list_viewmodel.dart';
 import '../../viewmodels/auth_viewmodel.dart';
 import '../../services/timezone_service.dart';

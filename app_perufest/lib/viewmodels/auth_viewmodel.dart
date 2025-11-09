@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import '../models/usuario.dart';
 import '../services/firestore_service.dart';
+import '../services/session_service.dart';  // ← AGREGAR ESTA LÍNEA
 import 'package:bcrypt/bcrypt.dart';
 
 enum AuthState { idle, loading, success, error }
@@ -16,6 +17,27 @@ class AuthViewModel extends ChangeNotifier {
   bool get isLoading => _state == AuthState.loading;
   bool get isLoggedIn => _currentUser != null;
 
+  // ← AGREGAR ESTE MÉTODO para inicializar desde sesión guardada
+  Future<void> initializeFromSession() async {
+    try {
+      final hayUsuarioLogueado = await SessionService.hayUsuarioLogueado();
+      if (hayUsuarioLogueado) {
+        final usuario = await SessionService.getCurrentUser();
+        if (usuario != null) {
+          _currentUser = usuario;
+          _setState(AuthState.success);
+          if (kDebugMode) {
+            debugPrint('✅ Sesión restaurada: ${usuario.nombre}');
+          }
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('❌ Error al restaurar sesión: $e');
+      }
+    }
+  }
+
   Future<void> registrar({
     required String nombre,
     required String username,
@@ -29,17 +51,14 @@ class AuthViewModel extends ChangeNotifier {
     _setState(AuthState.loading);
 
     try {
-      // Pequeño delay para mostrar el estado de carga
       await Future.delayed(const Duration(milliseconds: 100));
 
-      // Verificar si el correo ya existe
       final correoExiste = await FirestoreService.correoExiste(correo);
       if (correoExiste) {
         _setError('El correo ya está registrado');
         return;
       }
 
-      // Encriptar la contraseña con bcrypt
       final contrasenaEncriptada = BCrypt.hashpw(contrasena, BCrypt.gensalt());
 
       final usuario = Usuario(
@@ -72,16 +91,19 @@ class AuthViewModel extends ChangeNotifier {
     _setState(AuthState.loading);
 
     try {
-      // Pequeño delay para mostrar el estado de carga
       await Future.delayed(const Duration(milliseconds: 100));
 
       final usuario = await FirestoreService.loginUsuario(correo, contrasena);
 
       if (usuario != null) {
         _currentUser = usuario;
+        
+        // ← GUARDAR SESIÓN EN SHARED PREFERENCES
+        await SessionService.guardarSesion(usuario.id, usuario.nombre);
+        
         _setState(AuthState.success);
         if (kDebugMode) {
-          debugPrint('Login exitoso para: ${usuario.nombre}');
+          debugPrint('✅ Login exitoso para: ${usuario.nombre} (ID: ${usuario.id})');
         }
       } else {
         _setError('Credenciales incorrectas');
@@ -94,15 +116,17 @@ class AuthViewModel extends ChangeNotifier {
     }
   }
 
-  void logout() {
+  Future<void> logout() async {
+    // ← LIMPIAR SESIÓN DE SHARED PREFERENCES
+    await SessionService.cerrarSesion();
+    
     _currentUser = null;
     _setState(AuthState.idle);
     if (kDebugMode) {
-      debugPrint('Usuario deslogueado');
+      debugPrint('✅ Usuario deslogueado y sesión limpiada');
     }
   }
 
-  // Método para actualizar los datos del usuario actual
   Future<void> actualizarUsuario() async {
     if (_currentUser == null) return;
 
@@ -110,6 +134,10 @@ class AuthViewModel extends ChangeNotifier {
       final usuarioActualizado = await FirestoreService.obtenerUsuarioPorId(_currentUser!.id);
       if (usuarioActualizado != null) {
         _currentUser = usuarioActualizado;
+        
+        // ← ACTUALIZAR TAMBIÉN EN SHARED PREFERENCES
+        await SessionService.guardarSesion(usuarioActualizado.id, usuarioActualizado.nombre);
+        
         notifyListeners();
         if (kDebugMode) {
           debugPrint('Datos del usuario actualizados: ${usuarioActualizado.nombre}');

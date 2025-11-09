@@ -4,7 +4,6 @@ import '../../models/evento.dart';
 import '../../models/actividad.dart';
 import '../../viewmodels/actividades_viewmodel.dart';
 import '../../viewmodels/agenda_viewmodel.dart';
-import '../../services/notificaciones_service.dart';
 class ActividadesEventoView extends StatefulWidget {
   final Evento evento;
   final String userId; // Agregar userId como parámetro
