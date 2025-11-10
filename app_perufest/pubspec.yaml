@@ -27,6 +27,8 @@ dependencies:
   open_file: ^3.3.2
   file_picker: ^10.3.3
   shared_preferences: ^2.2.2
+  fl_chart: ^0.66.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
