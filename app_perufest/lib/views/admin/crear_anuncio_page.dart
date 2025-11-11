@@ -22,7 +22,6 @@ class _CrearAnuncioPageState extends State<CrearAnuncioPage> {
   
   DateTime? _fechaInicio;
   DateTime? _fechaFin;
-  String _posicionSeleccionada = 'superior';
   File? _imagenSeleccionada;
   String? _imagenUrlActual;
   
@@ -41,7 +40,6 @@ class _CrearAnuncioPageState extends State<CrearAnuncioPage> {
       _contenidoController.text = anuncio.contenido;
       _fechaInicio = anuncio.fechaInicio;
       _fechaFin = anuncio.fechaFin;
-      _posicionSeleccionada = anuncio.posicion;
       _imagenUrlActual = anuncio.imagenUrl;
     } else {
       // Valores por defecto para nuevo anuncio
@@ -134,12 +132,6 @@ class _CrearAnuncioPageState extends State<CrearAnuncioPage> {
                       _buildSeccionImagen(),
                       
                       const SizedBox(height: 24),
-                      
-                      // Configuración de visualización
-                      _buildSeccionTitulo('Configuración'),
-                      _buildSelectorPosicion(),
-                      
-                      const SizedBox(height: 16),
                       
                       // Fechas
                       _buildSeccionFechas(),
@@ -316,43 +308,6 @@ class _CrearAnuncioPageState extends State<CrearAnuncioPage> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildSelectorPosicion() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Posición del banner:',
-          style: TextStyle(fontWeight: FontWeight.w500),
-        ),
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            Expanded(
-              child: RadioListTile<String>(
-                title: const Text('Superior'),
-                subtitle: const Text('Top de la pantalla'),
-                value: 'superior',
-                groupValue: _posicionSeleccionada,
-                onChanged: (value) => setState(() => _posicionSeleccionada = value!),
-                activeColor: const Color(0xFF8B1B1B),
-              ),
-            ),
-            Expanded(
-              child: RadioListTile<String>(
-                title: const Text('Inferior'),
-                subtitle: const Text('Bottom de la pantalla'),
-                value: 'inferior',
-                groupValue: _posicionSeleccionada,
-                onChanged: (value) => setState(() => _posicionSeleccionada = value!),
-                activeColor: const Color(0xFF8B1B1B),
-              ),
-            ),
-          ],
-        ),
-      ],
     );
   }
 
@@ -577,7 +532,7 @@ class _CrearAnuncioPageState extends State<CrearAnuncioPage> {
         contenido: _contenidoController.text.trim(),
         fechaInicio: _fechaInicio!,
         fechaFin: _fechaFin!,
-        posicion: _posicionSeleccionada,
+        posicion: 'global',
         nuevaImagenPath: _imagenSeleccionada?.path,
         imagenUrlActual: _imagenUrlActual,
       );
@@ -588,7 +543,7 @@ class _CrearAnuncioPageState extends State<CrearAnuncioPage> {
         contenido: _contenidoController.text.trim(),
         fechaInicio: _fechaInicio!,
         fechaFin: _fechaFin!,
-        posicion: _posicionSeleccionada,
+        posicion: 'global',
         creadoPor: currentUser.id,
         imagenPath: _imagenSeleccionada?.path,
       );

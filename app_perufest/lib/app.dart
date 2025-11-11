@@ -28,7 +28,9 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => StandsViewModel()),
         ChangeNotifierProvider(create: (_) => ComentariosViewModel()),
         ChangeNotifierProvider(create: (_) => AgendaListViewModel()),
-        ChangeNotifierProvider(create: (_) => AnunciosViewModel()),
+        ChangeNotifierProvider(
+          create: (_) => AnunciosViewModel()..initialize(),
+        ),
         ChangeNotifierProvider(create: (_) => FAQViewModel()),
         ChangeNotifierProvider(create: (context) => NoticiasViewModel()),
         ChangeNotifierProvider(create: (_) => NoticiasVisitanteViewModel()),

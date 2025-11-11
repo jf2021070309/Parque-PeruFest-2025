@@ -17,15 +17,29 @@ class AnunciosViewModel extends ChangeNotifier {
 
   // Inicializar y escuchar cambios
   void initialize() {
+    print('🚀 Inicializando AnunciosViewModel...');
     try {
       _anunciosService.obtenerTodosLosAnuncios().listen(
         (anuncios) {
+          print('📊 AnunciosViewModel - Recibidos ${anuncios.length} anuncios de Firebase');
           if (mounted) {
             _anuncios = anuncios;
+            
+            // Log detallado de anuncios
+            for (var anuncio in anuncios) {
+              final ahora = DateTime.now();
+              final vigente = ahora.isAfter(anuncio.fechaInicio) && ahora.isBefore(anuncio.fechaFin);
+              print('   📄 ${anuncio.titulo} - Activo: ${anuncio.activo}, Vigente: $vigente, Posición: ${anuncio.posicion}');
+            }
+            
             notifyListeners();
+            print('🔄 AnunciosViewModel - Listeners notificados');
+          } else {
+            print('⚠️ AnunciosViewModel - Widget no montado, no se actualizó');
           }
         },
         onError: (error) {
+          print('❌ AnunciosViewModel - Error en stream: $error');
           if (mounted) {
             _error = error.toString();
             notifyListeners();
@@ -33,6 +47,7 @@ class AnunciosViewModel extends ChangeNotifier {
         },
       );
     } catch (e) {
+      print('❌ AnunciosViewModel - Error al inicializar: $e');
       _error = 'Error al inicializar: $e';
       notifyListeners();
     }
@@ -160,6 +175,57 @@ class AnunciosViewModel extends ChangeNotifier {
   // Obtener anuncios activos por posición
   Stream<List<Anuncio>> obtenerAnunciosActivos({String? posicion}) {
     return _anunciosService.obtenerAnunciosActivos(posicion: posicion);
+  }
+
+  // Obtener anuncios para una zona específica (para anuncios compactos)
+  Future<List<Anuncio>> obtenerAnunciosParaZona(String zona) async {
+    print('🔍 Obteniendo anuncios para zona: $zona');
+    try {
+      // Filtrar anuncios activos y válidos para la zona
+      final ahora = DateTime.now();
+      print('📅 Fecha actual: $ahora');
+      print('📊 Total anuncios disponibles: ${_anuncios.length}');
+      
+      final anunciosActivos = _anuncios.where((anuncio) {
+        final vigente = anuncio.fechaInicio.isBefore(ahora) && anuncio.fechaFin.isAfter(ahora);
+        final zonaValida = (anuncio.posicion == 'general' || anuncio.posicion == zona);
+        final cumpleCondiciones = anuncio.activo && vigente && zonaValida;
+        
+        print('   📄 ${anuncio.titulo}:');
+        print('      - Activo: ${anuncio.activo}');
+        print('      - Vigente: $vigente (${anuncio.fechaInicio} - ${anuncio.fechaFin})');
+        print('      - Zona válida: $zonaValida (${anuncio.posicion} vs $zona)');
+        print('      - Cumple condiciones: $cumpleCondiciones');
+        
+        return cumpleCondiciones;
+      }).toList();
+      
+      print('✅ Anuncios filtrados para zona $zona: ${anunciosActivos.length}');
+      
+      // Ordenar por orden configurado
+      anunciosActivos.sort((a, b) => a.orden.compareTo(b.orden));
+      return anunciosActivos;
+    } catch (e) {
+      print('❌ Error obteniendo anuncios para zona $zona: $e');
+      return [];
+    }
+  }
+
+  // Método para obtener anuncios con límite (para evitar saturación)
+  Future<List<Anuncio>> obtenerAnunciosLimitados({
+    String? zona,
+    int limite = 3,
+  }) async {
+    try {
+      final anuncios = zona != null 
+          ? await obtenerAnunciosParaZona(zona)
+          : _anuncios.where((a) => a.activo).toList();
+      
+      return anuncios.take(limite).toList();
+    } catch (e) {
+      print('Error obteniendo anuncios limitados: $e');
+      return [];
+    }
   }
 
   // Métodos auxiliares

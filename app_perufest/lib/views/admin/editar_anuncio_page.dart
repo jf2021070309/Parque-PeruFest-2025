@@ -20,7 +20,6 @@ class _EditarAnuncioPageState extends State<EditarAnuncioPage> {
   
   DateTime? _fechaInicio;
   DateTime? _fechaFin;
-  String _posicionSeleccionada = 'superior';
   bool _guardando = false;
 
   @override
@@ -32,7 +31,6 @@ class _EditarAnuncioPageState extends State<EditarAnuncioPage> {
     _imagenUrlController = TextEditingController(text: widget.anuncio.imagenUrl ?? '');
     _fechaInicio = widget.anuncio.fechaInicio;
     _fechaFin = widget.anuncio.fechaFin;
-    _posicionSeleccionada = widget.anuncio.posicion;
   }
 
   @override
@@ -94,7 +92,7 @@ class _EditarAnuncioPageState extends State<EditarAnuncioPage> {
         contenido: _contenidoController.text.trim(),
         fechaInicio: _fechaInicio!,
         fechaFin: _fechaFin!,
-        posicion: _posicionSeleccionada,
+        posicion: 'global',
         imagenUrlActual: _imagenUrlController.text.trim().isEmpty ? null : _imagenUrlController.text.trim(),
       );
 
@@ -231,22 +229,6 @@ class _EditarAnuncioPageState extends State<EditarAnuncioPage> {
                   }
                   return null;
                 },
-              ),
-              const SizedBox(height: 16),
-
-              // Posición
-              DropdownButtonFormField<String>(
-                value: _posicionSeleccionada,
-                decoration: const InputDecoration(
-                  labelText: 'Posición *',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.place),
-                ),
-                items: const [
-                  DropdownMenuItem(value: 'superior', child: Text('Parte Superior')),
-                  DropdownMenuItem(value: 'inferior', child: Text('Parte Inferior')),
-                ],
-                onChanged: (value) => setState(() => _posicionSeleccionada = value!),
               ),
               const SizedBox(height: 16),
 

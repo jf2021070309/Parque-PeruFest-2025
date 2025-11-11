@@ -17,9 +17,8 @@ class EjemploPantallaConBanners extends StatelessWidget {
       ),
       body: Column(
         children: [
-          // Banner superior - se muestra arriba del contenido
+          // Banner global - se muestra arriba del contenido
           const BannerAnuncios(
-            posicion: 'superior',
             padding: EdgeInsets.only(bottom: 8.0),
           ),
           
@@ -57,12 +56,6 @@ class EjemploPantallaConBanners extends StatelessWidget {
               ],
             ),
           ),
-          
-          // Banner inferior - se muestra abajo del contenido
-          const BannerAnuncios(
-            posicion: 'inferior',
-            padding: EdgeInsets.only(top: 8.0),
-          ),
         ],
       ),
     );
@@ -72,20 +65,23 @@ class EjemploPantallaConBanners extends StatelessWidget {
 /*
 INSTRUCCIONES DE USO:
 
-1. Para pantallas con AppBar y contenido scrolleable:
-   - Banner superior: Después del AppBar
-   - Banner inferior: Antes de la navegación inferior o al final
+1. Banner Global Único:
+   - Solo hay UN banner que aparece siempre en la parte superior
+   - No hay más selector de posición "superior/inferior"
+   - Todos los anuncios aparecen en el mismo lugar
 
-2. Para pantallas de navegación (BottomNavigationBar):
-   - Banner superior: En la parte superior del body
-   - Banner inferior: Arriba del BottomNavigationBar
+2. Para pantallas con AppBar y contenido scrolleable:
+   - Banner: Después del AppBar, antes del contenido
 
-3. Ejemplo de integración en DashboardUserView:
+3. Para pantallas de navegación (BottomNavigationBar):
+   - Banner: En la parte superior del body
+
+4. Ejemplo de integración en DashboardUserView:
 
 body: Column(
   children: [
-    // Banner superior
-    const BannerAnuncios(posicion: 'superior'),
+    // Banner global único
+    const BannerAnuncios(),
     
     // Contenido principal
     Expanded(
@@ -97,25 +93,22 @@ body: Column(
         },
       ),
     ),
-    
-    // Banner inferior (opcional, solo si no hay BottomNavigationBar)
-    const BannerAnuncios(posicion: 'inferior'),
   ],
 ),
 
-4. Para pantallas con Drawer:
-   - Los banners se integran igual, dentro del body del Scaffold
+5. Para pantallas con Drawer:
+   - El banner se integra igual, dentro del body del Scaffold
 
-5. Personalización:
+6. Personalización:
    - padding: Para agregar espacio alrededor del banner
    - Los banners se ocultan automáticamente si no hay anuncios activos
    - Rotación automática cada 45 segundos si hay múltiples anuncios
    - Tap para ver detalles del anuncio
 
-6. Características automáticas:
+7. Características automáticas:
    - Verificación de fechas de vigencia
    - Solo muestra anuncios activos
-   - Respeta la configuración de posición
    - Animaciones suaves entre anuncios
    - Indicadores visuales para múltiples anuncios
+   - Sistema simplificado sin posiciones
 */

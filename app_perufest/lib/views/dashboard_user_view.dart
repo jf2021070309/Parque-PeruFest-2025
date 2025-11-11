@@ -9,6 +9,7 @@ import 'visitante/mapa_view.dart';
 import 'visitante/faq_visitante_simple.dart';
 import 'visitante/agenda_view.dart';
 import 'visitante/noticias_visitante_view.dart';
+import '../widgets/banner_anuncios.dart';
 
 class DashboardUserView extends StatefulWidget {
   const DashboardUserView({super.key});
@@ -58,14 +59,33 @@ class _DashboardUserViewState extends State<DashboardUserView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: PageView(
-        controller: _pageController,
-        onPageChanged: (index) {
-          setState(() {
-            _selectedIndex = index;
-          });
-        },
-        children: [_buildEventosPage(), const NoticiasVisitanteView(), _buildMapaPage(), const AgendaView(), const FAQVisitanteSimple(), _buildPerfilPage()],
+      body: Column(
+        children: [
+          // Banner único global - aparece en todas las pestañas
+          const BannerAnuncios(
+            padding: EdgeInsets.zero,
+          ),
+          
+          // Contenido principal con PageView
+          Expanded(
+            child: PageView(
+              controller: _pageController,
+              onPageChanged: (index) {
+                setState(() {
+                  _selectedIndex = index;
+                });
+              },
+              children: [
+                _buildEventosPage(), 
+                const NoticiasVisitanteView(), 
+                _buildMapaPage(), 
+                const AgendaView(), 
+                const FAQVisitanteSimple(), 
+                _buildPerfilPage()
+              ],
+            ),
+          ),
+        ],
       ),
       bottomNavigationBar: _buildBottomNavigation(),
     );
@@ -167,17 +187,18 @@ class _DashboardUserViewState extends State<DashboardUserView> {
 
     return SliverPadding(
       padding: const EdgeInsets.all(16.0),
-      sliver: SliverGrid(
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 1,
-          mainAxisSpacing: 16.0,
-          childAspectRatio: 2.2, // Aumentado de 2.0 a 2.2 para dar más altura
+      sliver: SliverList(
+        delegate: SliverChildBuilderDelegate(
+          (context, index) {
+            final evento = eventosActivos[index];
+            final color = _eventoColors[index % _eventoColors.length];
+            return Container(
+              margin: const EdgeInsets.only(bottom: 16.0),
+              child: _buildEventoCard(evento, color),
+            );
+          },
+          childCount: eventosActivos.length,
         ),
-        delegate: SliverChildBuilderDelegate((context, index) {
-          final evento = eventosActivos[index];
-          final color = _eventoColors[index % _eventoColors.length];
-          return _buildEventoCard(evento, color);
-        }, childCount: eventosActivos.length),
       ),
     );
   }

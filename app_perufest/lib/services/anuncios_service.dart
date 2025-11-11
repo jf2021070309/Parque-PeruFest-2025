@@ -36,24 +36,48 @@ class AnunciosService {
 
   // Obtener anuncios activos y vigentes (para usuarios)
   Stream<List<Anuncio>> obtenerAnunciosActivos({String? posicion}) {
-    Query query = _firestore
-        .collection(_collection)
-        .where('activo', isEqualTo: true)
-        .orderBy('orden');
+    try {
+      // Consulta simple solo por 'activo' para evitar índices compuestos
+      return _firestore
+          .collection(_collection)
+          .where('activo', isEqualTo: true)
+          .snapshots()
+          .map((snapshot) {
+            final ahora = DateTime.now();
+            
+            List<Anuncio> anuncios = snapshot.docs
+                .map((doc) {
+                  try {
+                    return Anuncio.fromFirestore(doc);
+                  } catch (e) {
+                    debugPrint('Error al procesar anuncio ${doc.id}: $e');
+                    return null;
+                  }
+                })
+                .where((anuncio) => anuncio != null)
+                .cast<Anuncio>()
+                .where((anuncio) => 
+                    ahora.isAfter(anuncio.fechaInicio) && 
+                    ahora.isBefore(anuncio.fechaFin))
+                .toList();
 
-    if (posicion != null) {
-      query = query.where('posicion', isEqualTo: posicion);
+            // Filtrar por posición si se especifica
+            if (posicion != null) {
+              anuncios = anuncios.where((anuncio) => anuncio.posicion == posicion).toList();
+            }
+            
+            // Ordenar por orden en memoria
+            anuncios.sort((a, b) => a.orden.compareTo(b.orden));
+            
+            return anuncios;
+          })
+          .handleError((error) {
+            debugPrint('Error en stream de anuncios activos: $error');
+          });
+    } catch (e) {
+      debugPrint('Error al obtener anuncios activos: $e');
+      return Stream.value(<Anuncio>[]);
     }
-
-    return query.snapshots().map((snapshot) {
-      final ahora = DateTime.now();
-      return snapshot.docs
-          .map((doc) => Anuncio.fromFirestore(doc))
-          .where((anuncio) => 
-              ahora.isAfter(anuncio.fechaInicio) && 
-              ahora.isBefore(anuncio.fechaFin))
-          .toList();
-    });
   }
 
   // Crear anuncio
@@ -101,20 +125,27 @@ class AnunciosService {
   // Obtener siguiente número de orden
   Future<int> obtenerSiguienteOrden() async {
     try {
+      // Obtener todos los anuncios y calcular el orden en memoria para evitar índices
       final snapshot = await _firestore
           .collection(_collection)
-          .orderBy('orden', descending: true)
-          .limit(1)
           .get();
       
       if (snapshot.docs.isEmpty) {
         return 1;
       }
       
-      final ultimoOrden = snapshot.docs.first.data()['orden'] as int? ?? 0;
-      return ultimoOrden + 1;
+      int maxOrden = 0;
+      for (var doc in snapshot.docs) {
+        final orden = doc.data()['orden'] as int? ?? 0;
+        if (orden > maxOrden) {
+          maxOrden = orden;
+        }
+      }
+      
+      return maxOrden + 1;
     } catch (e) {
-      return 1;
+      debugPrint('Error al obtener siguiente orden: $e');
+      return DateTime.now().millisecondsSinceEpoch % 1000; // Orden temporal único
     }
   }
 

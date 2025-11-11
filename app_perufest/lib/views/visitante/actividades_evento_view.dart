@@ -4,6 +4,7 @@ import '../../models/evento.dart';
 import '../../models/actividad.dart';
 import '../../viewmodels/actividades_viewmodel.dart';
 import '../../viewmodels/agenda_viewmodel.dart';
+import '../../widgets/anuncio_compacto.dart';
 class ActividadesEventoView extends StatefulWidget {
   final Evento evento;
   final String userId; // Agregar userId como parámetro
@@ -244,15 +245,34 @@ class _ActividadesEventoViewState extends State<ActividadesEventoView>
       return _buildDiaSinActividades(dia);
     }
     actividades.sort((a, b) => a.fechaInicio.compareTo(b.fechaInicio));
+    
     return RefreshIndicator(
       onRefresh: _cargarActividades,
       child: ListView.builder(
         padding: const EdgeInsets.all(16),
-        itemCount: actividades.length,
+        itemCount: actividades.length * 2, // Duplicar para intercalar anuncios
         itemBuilder: (context, index) {
-          final actividad = actividades[index];
-          final color = _colorPalette[index % _colorPalette.length];
-          return _buildTarjetaActividad(actividad, color);
+          // Calcular índice real de actividad
+          final actividadIndex = index ~/ 2;
+          final isAnuncio = index.isOdd && actividadIndex < actividades.length;
+          
+          if (isAnuncio) {
+            // Mostrar anuncio compacto cada 2 actividades
+            return AnuncioCompacto(
+              zona: 'actividades',
+              indicePosicion: actividadIndex,
+              margin: const EdgeInsets.only(bottom: 12.0),
+            );
+          } else {
+            // Mostrar actividad
+            if (actividadIndex >= actividades.length) {
+              return const SizedBox.shrink();
+            }
+            
+            final actividad = actividades[actividadIndex];
+            final color = _colorPalette[actividadIndex % _colorPalette.length];
+            return _buildTarjetaActividad(actividad, color);
+          }
         },
       ),
     );
