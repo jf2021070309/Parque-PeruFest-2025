@@ -59,6 +59,7 @@ class _DashboardUserViewState extends State<DashboardUserView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFE2E8F0),
       body: Column(
         children: [
           // Banner único global - aparece en todas las pestañas
@@ -113,68 +114,158 @@ class _DashboardUserViewState extends State<DashboardUserView> {
 
   Widget _buildSliverAppBar() {
     return SliverAppBar(
-      expandedHeight: 200.0,
+      expandedHeight: 180.0,
       floating: false,
       pinned: true,
       backgroundColor: const Color(0xFF8B1B1B),
-      flexibleSpace: FlexibleSpaceBar(
-        title: const Text(
-          'PerúFest 2025',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            shadows: [
-              Shadow(
-                offset: Offset(1.0, 1.0),
-                blurRadius: 3.0,
-                color: Color.fromARGB(127, 0, 0, 0),
+      elevation: 0,
+      surfaceTintColor: Colors.transparent,
+      shadowColor: Colors.black.withOpacity(0.1),
+      forceElevated: true,
+      flexibleSpace: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+            colors: [
+              Color(0xFF8B1B1B),
+              Color(0xFFA52A2A),
+            ],
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Color(0x1A000000),
+              blurRadius: 8,
+              offset: Offset(0, 2),
+            ),
+          ],
+        ),
+        child: FlexibleSpaceBar(
+          title: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  Icons.celebration,
+                  color: Colors.white.withOpacity(0.9),
+                  size: 16,
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Text(
+                'PerúFest 2025',
+                style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 18,
+                  letterSpacing: 0.3,
+                  color: Colors.white,
+                ),
               ),
             ],
           ),
-        ),
-        background: Container(
-          decoration: BoxDecoration(
+          centerTitle: false,
+          titlePadding: const EdgeInsets.only(left: 16, bottom: 16),
+          background: Container(
+          decoration: const BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                const Color(0xFF8B1B1B).withOpacity(0.9),
-                const Color(0xFF8B1B1B),
+                Color(0xFFB91C1C),
+                Color(0xFF8B1B1B),
               ],
             ),
           ),
           child: Stack(
             children: [
+              // Elementos decorativos simples
               Positioned(
-                right: -50,
-                top: -50,
-                child: Icon(
-                  Icons.festival,
-                  size: 200,
-                  color: Colors.white.withOpacity(0.1),
+                right: -30,
+                top: -20,
+                child: Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white.withOpacity(0.05),
+                  ),
                 ),
               ),
-              const Positioned(
+              Positioned(
+                left: -20,
+                bottom: 20,
+                child: Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.1),
+                      width: 1,
+                    ),
+                  ),
+                ),
+              ),
+              
+              // Contenido principal simplificado
+              Positioned(
                 bottom: 60,
-                left: 20,
+                left: 24,
+                right: 80,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Bienvenido al',
-                      style: TextStyle(color: Colors.white70, fontSize: 16),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(25),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.2),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.waving_hand,
+                            color: Colors.white.withOpacity(0.9),
+                            size: 14,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Bienvenido al',
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.95),
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
+                    const SizedBox(height: 16),
                     Text(
-                      'Parque Perú',
+                      'Descubre eventos únicos',
                       style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
+                        color: Colors.white.withOpacity(0.85),
+                        fontSize: 15,
+                        fontWeight: FontWeight.w400,
                       ),
                     ),
                   ],
                 ),
               ),
             ],
+          ),
           ),
         ),
       ),
@@ -218,202 +309,266 @@ class _DashboardUserViewState extends State<DashboardUserView> {
     );
 
     String estadoTexto = '';
-    Color estadoColor = color;
+    Color estadoColor = const Color(0xFF6B7280);
 
     if (hoy.isAtSameMomentAs(inicioEvento) ||
         (hoy.isAfter(inicioEvento) && hoy.isBefore(finEvento)) ||
         hoy.isAtSameMomentAs(finEvento)) {
       estadoTexto = 'ACTUAL';
-      estadoColor = Colors.green;
+      estadoColor = const Color(0xFF059669);
     } else if (inicioEvento.isAfter(hoy)) {
       final diasRestantes = inicioEvento.difference(hoy).inDays;
       if (diasRestantes <= 7) {
         estadoTexto = 'PRÓXIMO';
-        estadoColor = Colors.orange;
+        estadoColor = const Color(0xFFB91C1C);
       }
     }
 
     return GestureDetector(
       onTap: () => _verActividadesEvento(evento),
       child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
         decoration: BoxDecoration(
+          color: Colors.white,
           borderRadius: BorderRadius.circular(20),
-          gradient: LinearGradient(
-            colors: [color, color.withOpacity(0.7)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+          border: Border.all(
+            color: const Color(0xFFF1F5F9),
+            width: 1.5,
           ),
           boxShadow: [
             BoxShadow(
-              color: color.withOpacity(0.3),
-              blurRadius: 10,
-              offset: const Offset(0, 5),
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 20,
+              offset: const Offset(0, 8),
+            ),
+            BoxShadow(
+              color: Colors.black.withOpacity(0.02),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
             ),
           ],
         ),
-        child: Stack(
-          children: [
-            // Patrón decorativo de fondo
-            Positioned(
-              right: -20,
-              top: -20,
-              child: Icon(
-                Icons.celebration,
-                size: 100,
-                color: Colors.white.withOpacity(0.1),
-              ),
-            ),
-
-            // Contenido principal
-            Padding(
-              padding: const EdgeInsets.all(24),
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    // Solo badge de estado si existe
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        if (estadoTexto.isNotEmpty)
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header con categoría y estado mejorado
+              Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF8B1B1B).withOpacity(0.08),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
                           Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 6,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(12),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
-                                  blurRadius: 4,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: Text(
-                              estadoTexto,
-                              style: TextStyle(
-                                color: estadoColor,
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                              ),
+                            width: 8,
+                            height: 8,
+                            decoration: const BoxDecoration(
+                              color: Color(0xFF8B1B1B),
+                              shape: BoxShape.circle,
                             ),
                           ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    // Título del evento
-                    Text(
-                      evento.nombre,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        shadows: [
-                          Shadow(
-                            offset: Offset(1.0, 1.0),
-                            blurRadius: 2.0,
-                            color: Color.fromARGB(127, 0, 0, 0),
+                          const SizedBox(width: 8),
+                          Flexible(
+                            child: Text(
+                              evento.categoria,
+                              style: const TextStyle(
+                                color: Color(0xFF8B1B1B),
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 0.2,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
                         ],
                       ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 8),
-                    // Categoría y tipo de evento
-                    Row(
-                      children: [
-                        Text(
-                          evento.categoria,
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.9),
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                  ),
+                  if (estadoTexto.isNotEmpty)
+                    const SizedBox(width: 12),
+                  if (estadoTexto.isNotEmpty)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: estadoColor,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        estadoTexto,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.3,
                         ),
-                        const SizedBox(width: 12),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: evento.tipoEvento == 'gratis' ? Colors.green : Colors.orange,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            evento.tipoEvento == 'gratis' ? 'GRATIS' : 'DE PAGO',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
-                    const SizedBox(height: 16),
-                    // Información de fechas y ubicación
-                    Column(
-                      children: [
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.calendar_today,
-                              color: Colors.white.withOpacity(0.9),
-                              size: 16,
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                '${_formatearFecha(evento.fechaInicio)} - ${_formatearFecha(evento.fechaFin)}',
-                                style: TextStyle(
-                                  color: Colors.white.withOpacity(0.9),
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.location_on,
-                              color: Colors.white.withOpacity(0.9),
-                              size: 16,
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                evento.lugar,
-                                style: TextStyle(
-                                  color: Colors.white.withOpacity(0.9),
-                                  fontSize: 14,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            Icon(
-                              Icons.arrow_forward_ios,
-                              color: Colors.white.withOpacity(0.7),
-                              size: 16,
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+                ],
               ),
-            ),
-          ],
+              const SizedBox(height: 18),
+              
+              // Título del evento mejorado
+              Text(
+                evento.nombre,
+                style: const TextStyle(
+                  color: Color(0xFF1E293B),
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.3,
+                  height: 1.3,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 18),
+              
+              // Información simplificada y elegante
+              Column(
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFEF2F2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.calendar_today_outlined,
+                          color: Color(0xFF8B1B1B),
+                          size: 16,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Fechas',
+                            style: TextStyle(
+                              color: Color(0xFF64748B),
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
+                              letterSpacing: 0.2,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            '${_formatearFecha(evento.fechaInicio)} - ${_formatearFecha(evento.fechaFin)}',
+                            style: const TextStyle(
+                              color: Color(0xFF1E293B),
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFEF2F2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.location_on_outlined,
+                          color: Color(0xFF8B1B1B),
+                          size: 16,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Ubicación',
+                              style: TextStyle(
+                                color: Color(0xFF64748B),
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                                letterSpacing: 0.2,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              evento.lugar,
+                              style: const TextStyle(
+                                color: Color(0xFF1E293B),
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              
+              // Footer elegante y minimalista
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: evento.tipoEvento == 'gratis' 
+                        ? const Color(0xFF10B981)
+                        : const Color(0xFF6B7280),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      evento.tipoEvento == 'gratis' ? 'GRATIS' : 'DE PAGO',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 12,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
+                  const Spacer(),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1E293B),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: const Icon(
+                      Icons.arrow_forward,
+                      color: Colors.white,
+                      size: 18,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -486,13 +641,33 @@ class _DashboardUserViewState extends State<DashboardUserView> {
   Widget _buildBottomNavigation() {
     return Container(
       decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color(0xFFFBFBFB),
+            Color(0xFFFFFFFF),
+          ],
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, -5),
+            color: Colors.black.withOpacity(0.12),
+            blurRadius: 25,
+            offset: const Offset(0, -8),
+            spreadRadius: 0,
+          ),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, -2),
           ),
         ],
+        border: Border(
+          top: BorderSide(
+            color: const Color(0xFFE2E8F0).withOpacity(0.7),
+            width: 0.5,
+          ),
+        ),
       ),
       child: BottomNavigationBar(
         currentIndex: _selectedIndex,
@@ -512,17 +687,28 @@ class _DashboardUserViewState extends State<DashboardUserView> {
           );
         },
         type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.transparent,
         selectedItemColor: const Color(0xFF8B1B1B),
-        unselectedItemColor: Colors.grey.shade600,
-        selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
+        unselectedItemColor: const Color(0xFF64748B),
+        selectedLabelStyle: const TextStyle(
+          fontWeight: FontWeight.w700,
+          fontSize: 11,
+          letterSpacing: 0.3,
+        ),
+        unselectedLabelStyle: const TextStyle(
+          fontWeight: FontWeight.w500,
+          fontSize: 10,
+          letterSpacing: 0.2,
+        ),
+        elevation: 0,
+        iconSize: 22,
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.celebration),
+            icon: Icon(Icons.celebration_outlined),
             activeIcon: Icon(Icons.celebration),
             label: 'Eventos',
           ),
-          BottomNavigationBarItem( // ← NUEVA PESTAÑA
+          BottomNavigationBarItem(
             icon: Icon(Icons.article_outlined),
             activeIcon: Icon(Icons.article),
             label: 'Noticias',
@@ -532,9 +718,9 @@ class _DashboardUserViewState extends State<DashboardUserView> {
             activeIcon: Icon(Icons.map),
             label: 'Mapa',
           ),
-
           BottomNavigationBarItem(
-            icon: Icon(Icons.event_note), // Icono de agenda
+            icon: Icon(Icons.event_note_outlined),
+            activeIcon: Icon(Icons.event_note),
             label: 'Agenda',
           ),
           BottomNavigationBarItem(
@@ -549,7 +735,6 @@ class _DashboardUserViewState extends State<DashboardUserView> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.logout),
-            activeIcon: Icon(Icons.logout),
             label: 'Salir',
           ),
         ],

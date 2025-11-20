@@ -47,7 +47,7 @@ class _NoticiasVisitanteViewState extends State<NoticiasVisitanteView> {
       child: Consumer<NoticiasVisitanteViewModel>(
         builder: (context, viewModel, child) {
           return Scaffold(
-            backgroundColor: Colors.grey[50],
+            backgroundColor: const Color(0xFFE2E8F0),
             body: CustomScrollView(
               controller: _scrollController,
               slivers: [
@@ -64,68 +64,158 @@ class _NoticiasVisitanteViewState extends State<NoticiasVisitanteView> {
 
   Widget _buildSliverAppBar(NoticiasVisitanteViewModel viewModel) {
     return SliverAppBar(
-      expandedHeight: 200.0,
+      expandedHeight: 180.0,
       floating: false,
       pinned: true,
       backgroundColor: const Color(0xFF8B1B1B),
-      flexibleSpace: FlexibleSpaceBar(
-        title: const Text(
-          'Noticias PerúFest',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            shadows: [
-              Shadow(
-                offset: Offset(1.0, 1.0),
-                blurRadius: 3.0,
-                color: Color.fromARGB(127, 0, 0, 0),
-              ),
+      elevation: 0,
+      surfaceTintColor: Colors.transparent,
+      shadowColor: Colors.black.withOpacity(0.1),
+      forceElevated: true,
+      flexibleSpace: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+            colors: [
+              Color(0xFF8B1B1B),
+              Color(0xFFA52A2A),
             ],
           ),
-        ),
-        background: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                const Color(0xFF8B1B1B).withOpacity(0.9),
-                const Color(0xFF8B1B1B),
-              ],
+          boxShadow: [
+            BoxShadow(
+              color: Color(0x1A000000),
+              blurRadius: 8,
+              offset: Offset(0, 2),
             ),
-          ),
-          child: Stack(
+          ],
+        ),
+        child: FlexibleSpaceBar(
+          title: Row(
             children: [
-              Positioned(
-                right: -50,
-                top: -50,
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(8),
+                ),
                 child: Icon(
                   Icons.article,
-                  size: 200,
-                  color: Colors.white.withOpacity(0.1),
+                  color: Colors.white.withOpacity(0.9),
+                  size: 16,
                 ),
               ),
-              const Positioned(
-                bottom: 60,
-                left: 20,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Mantente informado',
-                      style: TextStyle(color: Colors.white70, fontSize: 16),
-                    ),
-                    Text(
-                      'Últimas noticias',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
+              const SizedBox(width: 12),
+              const Text(
+                'Noticias PerúFest',
+                style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 18,
+                  letterSpacing: 0.3,
+                  color: Colors.white,
                 ),
               ),
             ],
+          ),
+          centerTitle: false,
+          titlePadding: const EdgeInsets.only(left: 16, bottom: 16),
+          background: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Color(0xFFB91C1C),
+                  Color(0xFF8B1B1B),
+                ],
+              ),
+            ),
+            child: Stack(
+              children: [
+                // Elementos decorativos simples
+                Positioned(
+                  right: -30,
+                  top: -20,
+                  child: Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withOpacity(0.05),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  left: -20,
+                  bottom: 20,
+                  child: Container(
+                    width: 60,
+                    height: 60,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.1),
+                        width: 1,
+                      ),
+                    ),
+                  ),
+                ),
+                
+                // Contenido principal simplificado
+                Positioned(
+                  bottom: 60,
+                  left: 24,
+                  right: 80,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(25),
+                          border: Border.all(
+                            color: Colors.white.withOpacity(0.2),
+                            width: 1,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.newspaper,
+                              color: Colors.white.withOpacity(0.9),
+                              size: 14,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Mantente informado',
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.95),
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Últimas noticias y novedades',
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.85),
+                          fontSize: 15,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -140,9 +230,9 @@ class _NoticiasVisitanteViewState extends State<NoticiasVisitanteView> {
   }
 
   Widget _buildFiltrosSection(NoticiasVisitanteViewModel viewModel) {
-    return SliverToBoxAdapter(
-      child: Container(
-        padding: const EdgeInsets.all(16),
+    return SliverPadding(
+      padding: const EdgeInsets.all(16.0),
+      sliver: SliverToBoxAdapter(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -304,33 +394,45 @@ class _NoticiasVisitanteViewState extends State<NoticiasVisitanteView> {
       );
     }
 
-    return SliverList(
-      delegate: SliverChildBuilderDelegate(
-        (context, index) {
-          if (index < viewModel.noticias.length) {
-            return _buildNoticiaCard(viewModel.noticias[index]);
-          } else if (viewModel.hasMore) {
-            return _buildLoadMoreButton(viewModel);
-          } else {
-            return _buildFinMessage();
-          }
-        },
-        childCount: viewModel.noticias.length + (viewModel.hasMore ? 1 : 1),
+    return SliverPadding(
+      padding: const EdgeInsets.all(16.0),
+      sliver: SliverList(
+        delegate: SliverChildBuilderDelegate(
+          (context, index) {
+            if (index < viewModel.noticias.length) {
+              return _buildNoticiaCard(viewModel.noticias[index]);
+            } else if (viewModel.hasMore) {
+              return _buildLoadMoreButton(viewModel);
+            } else {
+              return _buildFinMessage();
+            }
+          },
+          childCount: viewModel.noticias.length + (viewModel.hasMore ? 1 : 1),
+        ),
       ),
     );
   }
 
   Widget _buildNoticiaCard(Noticia noticia) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: const Color(0xFFF1F5F9),
+          width: 1.5,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -347,7 +449,7 @@ class _NoticiasVisitanteViewState extends State<NoticiasVisitanteView> {
             );
           },
           child: Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

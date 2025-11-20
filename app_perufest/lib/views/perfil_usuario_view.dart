@@ -301,21 +301,51 @@ class _PerfilUsuarioViewState extends State<PerfilUsuarioView> {
     bool isEditable = false,
     TextEditingController? controller,
   }) {
-    return Card(
-      elevation: 3,
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: const Color(0xFFF1F5F9),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            offset: const Offset(0, 2),
+            blurRadius: 12,
+          ),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            offset: const Offset(0, 1),
+            blurRadius: 6,
+          ),
+        ],
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(12),
+              width: 48,
+              height: 48,
               decoration: BoxDecoration(
-                color: Colors.blue.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    const Color(0xFF8B1B1B).withOpacity(0.1),
+                    const Color(0xFFB91C1C).withOpacity(0.15),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(14),
               ),
-              child: Icon(icon, color: Colors.blue, size: 24),
+              child: Icon(
+                icon,
+                color: const Color(0xFF8B1B1B),
+                size: 24,
+              ),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -324,31 +354,62 @@ class _PerfilUsuarioViewState extends State<PerfilUsuarioView> {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.grey[600],
                       fontWeight: FontWeight.w500,
+                      letterSpacing: 0.2,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 8),
                   if (_isEditing && isEditable && controller != null)
-                    TextFormField(
-                      controller: controller,
-                      decoration: InputDecoration(
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
-                        ),
+                    Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.04),
+                            offset: const Offset(0, 1),
+                            blurRadius: 3,
+                          ),
+                        ],
                       ),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Este campo es requerido';
-                        }
-                        return null;
-                      },
+                      child: TextFormField(
+                        controller: controller,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xFF1E293B),
+                        ),
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE2E8F0),
+                              width: 1,
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFF8B1B1B),
+                              width: 1.5,
+                            ),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                          fillColor: const Color(0xFFF8FAFC),
+                          filled: true,
+                        ),
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Este campo es requerido';
+                          }
+                          return null;
+                        },
+                      ),
                     )
                   else
                     Text(
@@ -356,7 +417,8 @@ class _PerfilUsuarioViewState extends State<PerfilUsuarioView> {
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
-                        color: Colors.black87,
+                        color: Color(0xFF1E293B),
+                        letterSpacing: 0.2,
                       ),
                     ),
                 ],
@@ -371,242 +433,398 @@ class _PerfilUsuarioViewState extends State<PerfilUsuarioView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
-      appBar: AppBar(
-        title: const Text(
-          'Mi Perfil',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: Colors.blue,
-        foregroundColor: Colors.white,
-        elevation: 0,
-        actions: [
-          if (!_isEditing)
-            IconButton(
-              icon: const Icon(Icons.edit),
-              onPressed: () => setState(() => _isEditing = true),
-            ),
-        ],
-      ),
+      backgroundColor: const Color(0xFFF1F5F9),
+
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              // Avatar y información básica
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Colors.blue, Colors.blue.shade300],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                ),
+        child: Column(
+          children: [
+            // Header con avatar elegante
+            _buildElegantHeader(),
+            
+            // Contenido principal
+            Padding(
+              padding: const EdgeInsets.all(24),
+              child: Form(
+                key: _formKey,
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Stack(
-                      children: [
-                        // Avatar con imagen o inicial
-                        CircleAvatar(
-                          radius: 50,
-                          backgroundColor: Colors.white,
-                          backgroundImage: (_nuevaImagenPerfil != null)
-                              ? FileImage(_nuevaImagenPerfil!)
-                              : (_urlImagenPerfil != null && _urlImagenPerfil!.isNotEmpty)
-                                  ? NetworkImage(_urlImagenPerfil!)
-                                  : null,
-                          child: (_nuevaImagenPerfil == null && 
-                                 (_urlImagenPerfil == null || _urlImagenPerfil!.isEmpty))
-                              ? Text(
-                                  (_usuarioController.text.isNotEmpty
-                                          ? _usuarioController.text
-                                          : 'U')
-                                      .toString()
-                                      .toUpperCase()[0],
-                                  style: const TextStyle(
-                                    fontSize: 32,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.blue,
-                                  ),
-                                )
-                              : null,
-                        ),
-                        
-                        // Indicador de carga y botón de editar
-                        Positioned(
-                          bottom: 0,
-                          right: 0,
-                          child: GestureDetector(
-                            onTap: _subiendoImagen ? null : _mostrarOpcionesImagen,
-                            child: Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: Colors.blue,
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: Colors.white,
-                                  width: 2,
-                                ),
-                              ),
-                              child: _subiendoImagen
-                                  ? const SizedBox(
-                                      width: 16,
-                                      height: 16,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        valueColor: AlwaysStoppedAnimation<Color>(
-                                          Colors.white,
-                                        ),
-                                      ),
-                                    )
-                                  : const Icon(
-                                      Icons.camera_alt,
-                                      color: Colors.white,
-                                      size: 16,
-                                    ),
+                    // Título de sección
+                    Text(
+                      'Información Personal',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey[800],
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Tarjetas de información
+                    _buildInfoCard(
+                      title: 'Nombre de Usuario',
+                      subtitle: _usuarioController.text.isEmpty ? 'No especificado' : _usuarioController.text,
+                      icon: Icons.person_rounded,
+                      isEditable: true,
+                      controller: _usuarioController,
+                    ),
+                    _buildInfoCard(
+                      title: 'Correo Electrónico',
+                      subtitle: widget.userData['email'] ?? 'No especificado',
+                      icon: Icons.email_rounded,
+                      isEditable: false,
+                    ),
+                    _buildInfoCard(
+                      title: 'Número de Celular',
+                      subtitle: _celularController.text.isEmpty ? 'No especificado' : _celularController.text,
+                      icon: Icons.phone_rounded,
+                      isEditable: true,
+                      controller: _celularController,
+                    ),
+                    _buildInfoCard(
+                      title: 'Rol en el Sistema',
+                      subtitle: widget.userData['rol'] ?? 'Visitante',
+                      icon: Icons.verified_user_rounded,
+                      isEditable: false,
+                    ),
+
+                    const SizedBox(height: 40),
+
+                    // Botones de acción elegantes
+                    if (_isEditing) _buildActionButtons(),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildElegantHeader() {
+    return Container(
+      width: double.infinity,
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFF8B1B1B),
+            Color(0xFFB91C1C),
+            Color(0xFF8B1B1B),
+          ],
+          stops: [0.0, 0.5, 1.0],
+        ),
+      ),
+      child: SafeArea(
+        child: Column(
+          children: [
+            const SizedBox(height: 20),
+            
+            // AppBar personalizada
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Center(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.15),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Icon(
+                              Icons.person,
+                              color: Colors.white.withOpacity(0.9),
+                              size: 16,
                             ),
                           ),
+                          const SizedBox(width: 12),
+                          const Text(
+                            'Mi Perfil',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 18,
+                              letterSpacing: 0.3,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  if (!_isEditing)
+                    GestureDetector(
+                      onTap: () => setState(() => _isEditing = true),
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      _usuarioController.text.isNotEmpty
-                          ? _usuarioController.text
-                          : 'Usuario',
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        widget.userData['rol'] ?? 'Visitante',
-                        style: const TextStyle(
-                          fontSize: 14,
+                        child: const Icon(
+                          Icons.edit_rounded,
                           color: Colors.white,
-                          fontWeight: FontWeight.w500,
+                          size: 20,
                         ),
                       ),
                     ),
-                  ],
+                ],
+              ),
+            ),
+            
+            const SizedBox(height: 40),
+            
+            // Avatar y información principal
+            Stack(
+              children: [
+                // Avatar principal
+                Container(
+                  width: 120,
+                  height: 120,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.3),
+                      width: 4,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.2),
+                        offset: const Offset(0, 8),
+                        blurRadius: 20,
+                      ),
+                    ],
+                  ),
+                  child: CircleAvatar(
+                    radius: 56,
+                    backgroundColor: Colors.white,
+                    backgroundImage: (_nuevaImagenPerfil != null)
+                        ? FileImage(_nuevaImagenPerfil!)
+                        : (_urlImagenPerfil != null && _urlImagenPerfil!.isNotEmpty)
+                            ? NetworkImage(_urlImagenPerfil!)
+                            : null,
+                    child: (_nuevaImagenPerfil == null && 
+                           (_urlImagenPerfil == null || _urlImagenPerfil!.isEmpty))
+                        ? Text(
+                            (_usuarioController.text.isNotEmpty
+                                    ? _usuarioController.text
+                                    : 'U')
+                                .toString()
+                                .toUpperCase()[0],
+                            style: const TextStyle(
+                              fontSize: 36,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF8B1B1B),
+                            ),
+                          )
+                        : null,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 24),
-
-              // Información del perfil
-              _buildInfoCard(
-                title: 'Nombre de Usuario',
-                subtitle: _usuarioController.text,
-                icon: Icons.person,
-                isEditable: true,
-                controller: _usuarioController,
-              ),
-              _buildInfoCard(
-                title: 'Correo Electrónico',
-                subtitle: widget.userData['email'] ?? 'No especificado',
-                icon: Icons.email,
-                isEditable: false,
-              ),
-              _buildInfoCard(
-                title: 'Número de Celular',
-                subtitle:
-                    _celularController.text.isEmpty
-                        ? 'No especificado'
-                        : _celularController.text,
-                icon: Icons.phone,
-                isEditable: true,
-                controller: _celularController,
-              ),
-              _buildInfoCard(
-                title: 'Rol',
-                subtitle: widget.userData['rol'] ?? 'Visitante',
-                icon: Icons.badge,
-                isEditable: false,
-              ),
-
-              const SizedBox(height: 32),
-
-              // Botones de acción
-              if (_isEditing)
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed:
-                            _isLoading
-                                ? null
-                                : () => setState(() => _isEditing = false),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.grey,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
+                
+                // Botón de editar imagen
+                Positioned(
+                  bottom: 0,
+                  right: 0,
+                  child: GestureDetector(
+                    onTap: _subiendoImagen ? null : _mostrarOpcionesImagen,
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF8B1B1B), Color(0xFFB91C1C)],
                         ),
-                        child: const Text(
-                          'Cancelar',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.white,
+                          width: 3,
                         ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.2),
+                            offset: const Offset(0, 4),
+                            blurRadius: 12,
+                          ),
+                        ],
                       ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: _isLoading ? null : _guardarCambios,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child:
-                            _isLoading
-                                ? const SizedBox(
-                                  height: 20,
-                                  width: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      Colors.white,
-                                    ),
-                                  ),
-                                )
-                                : const Text(
-                                  'Guardar Cambios',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                      child: _subiendoImagen
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Colors.white,
                                 ),
-                      ),
+                              ),
+                            )
+                          : const Icon(
+                              Icons.camera_alt_rounded,
+                              color: Colors.white,
+                              size: 18,
+                            ),
                     ),
-                  ],
+                  ),
                 ),
-            ],
-          ),
+              ],
+            ),
+            
+            const SizedBox(height: 24),
+            
+            // Información del usuario
+            Text(
+              _usuarioController.text.isNotEmpty
+                  ? _usuarioController.text
+                  : 'Usuario',
+              style: const TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+                letterSpacing: 0.5,
+              ),
+            ),
+            
+            const SizedBox(height: 12),
+            
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 8,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.3),
+                  width: 1,
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.verified_rounded,
+                    color: Colors.white,
+                    size: 16,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    widget.userData['rol'] ?? 'Visitante',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w500,
+                      letterSpacing: 0.3,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            
+            const SizedBox(height: 40),
+          ],
         ),
       ),
+    );
+  }
+
+  Widget _buildActionButtons() {
+    return Row(
+      children: [
+        Expanded(
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.08),
+                  offset: const Offset(0, 2),
+                  blurRadius: 8,
+                ),
+              ],
+            ),
+            child: ElevatedButton(
+              onPressed: _isLoading
+                  ? null
+                  : () => setState(() => _isEditing = false),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFF1F5F9),
+                foregroundColor: Colors.grey[700],
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+              child: const Text(
+                'Cancelar',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  letterSpacing: 0.3,
+                ),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF8B1B1B).withOpacity(0.3),
+                  offset: const Offset(0, 4),
+                  blurRadius: 12,
+                ),
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  offset: const Offset(0, 2),
+                  blurRadius: 8,
+                ),
+              ],
+            ),
+            child: ElevatedButton(
+              onPressed: _isLoading ? null : _guardarCambios,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF8B1B1B),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+              child: _isLoading
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          Colors.white,
+                        ),
+                      ),
+                    )
+                  : const Text(
+                      'Guardar Cambios',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 

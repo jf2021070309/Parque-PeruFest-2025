@@ -121,48 +121,159 @@ class _MapaViewState extends State<MapaView> {
 
   Widget _buildSliverAppBar() {
     return SliverAppBar(
-      expandedHeight: 120.0,
+      expandedHeight: 180.0,
       floating: false,
       pinned: true,
       backgroundColor: const Color(0xFF8B1B1B),
+      elevation: 0,
+      surfaceTintColor: Colors.transparent,
+      shadowColor: Colors.black.withOpacity(0.1),
+      forceElevated: true,
       automaticallyImplyLeading: false,
-      flexibleSpace: FlexibleSpaceBar(
-        title: const Text(
-          'Ubicación del Evento',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            shadows: [
-              Shadow(
-                offset: Offset(1.0, 1.0),
-                blurRadius: 3.0,
-                color: Color.fromARGB(127, 0, 0, 0),
-              ),
+      flexibleSpace: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+            colors: [
+              Color(0xFF8B1B1B),
+              Color(0xFFA52A2A),
             ],
           ),
-        ),
-        background: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                const Color(0xFF8B1B1B).withOpacity(0.9),
-                const Color(0xFF8B1B1B),
-              ],
+          boxShadow: [
+            BoxShadow(
+              color: Color(0x1A000000),
+              blurRadius: 8,
+              offset: Offset(0, 2),
             ),
-          ),
-          child: Stack(
+          ],
+        ),
+        child: FlexibleSpaceBar(
+          title: Row(
             children: [
-              Positioned(
-                right: -30,
-                top: -30,
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(8),
+                ),
                 child: Icon(
-                  Icons.location_on,
-                  size: 120,
-                  color: Colors.white.withOpacity(0.1),
+                  Icons.map,
+                  color: Colors.white.withOpacity(0.9),
+                  size: 16,
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Text(
+                'Mapa del Evento',
+                style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 18,
+                  letterSpacing: 0.3,
+                  color: Colors.white,
                 ),
               ),
             ],
+          ),
+          centerTitle: false,
+          titlePadding: const EdgeInsets.only(left: 16, bottom: 16),
+          background: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Color(0xFFB91C1C),
+                  Color(0xFF8B1B1B),
+                ],
+              ),
+            ),
+            child: Stack(
+              children: [
+                // Elementos decorativos simples
+                Positioned(
+                  right: -30,
+                  top: -20,
+                  child: Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withOpacity(0.05),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  left: -20,
+                  bottom: 20,
+                  child: Container(
+                    width: 60,
+                    height: 60,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.1),
+                        width: 1,
+                      ),
+                    ),
+                  ),
+                ),
+                
+                // Contenido principal simplificado
+                Positioned(
+                  bottom: 60,
+                  left: 24,
+                  right: 80,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(25),
+                          border: Border.all(
+                            color: Colors.white.withOpacity(0.2),
+                            width: 1,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.place,
+                              color: Colors.white.withOpacity(0.9),
+                              size: 14,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Parque Perú - Tacna',
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.95),
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Encuentra las zonas de cada evento',
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.85),
+                          fontSize: 15,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -171,79 +282,160 @@ class _MapaViewState extends State<MapaView> {
 
   Widget _buildMapContent() {
     return Container(
-      decoration: BoxDecoration(
-        color: Colors.grey.shade100,
+      decoration: const BoxDecoration(
+        color: Color(0xFFE2E8F0),
       ),
       child: Column(
         children: [
-          // Información del lugar
+          // Panel de selección elegante
           Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16.0),
-            color: Colors.white,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Selector de eventos
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8.0),
-                    border: Border.all(color: const Color(0xFF8B1B1B)),
-                  ),
-                  child: DropdownButton<Evento>(
-                    value: _eventoSeleccionado,
-                    isExpanded: true,
-                    underline: const SizedBox(),
-                    hint: const Text('Selecciona un evento'),
-                    items: _eventos.map((evento) {
-                      return DropdownMenuItem<Evento>(
-                        value: evento,
-                        child: Text(
-                          evento.nombre,
-                          style: const TextStyle(
-                            color: Color(0xFF8B1B1B),
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                    onChanged: (Evento? evento) {
-                      if (mounted) {
-                        setState(() {
-                          _eventoSeleccionado = evento;
-                        });
-                      }
-                      if (evento != null) {
-                        _cargarZonasDeEvento(evento.id);
-                      } else {
-                        if (mounted) {
-                          setState(() {
-                            _zonas = [];
-                          });
-                        }
-                      }
-                    },
-                  ),
+            margin: const EdgeInsets.all(16.0),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: const Color(0xFFF1F5F9),
+                width: 1.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.04),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
+                ),
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.02),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
                 ),
               ],
             ),
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Título de la sección
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF8B1B1B).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.event,
+                          color: Color(0xFF8B1B1B),
+                          size: 20,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      const Text(
+                        'Seleccionar Evento',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 16,
+                          color: Color(0xFF1F2937),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  // Selector de eventos mejorado
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12.0),
+                      border: Border.all(
+                        color: const Color(0xFF8B1B1B).withOpacity(0.3),
+                        width: 1.5,
+                      ),
+                      color: const Color(0xFFFAFAFA),
+                    ),
+                    child: DropdownButton<Evento>(
+                      value: _eventoSeleccionado,
+                      isExpanded: true,
+                      underline: const SizedBox(),
+                      hint: Text(
+                        'Selecciona un evento',
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: 14,
+                        ),
+                      ),
+                      items: _eventos.map((evento) {
+                        return DropdownMenuItem<Evento>(
+                          value: evento,
+                          child: Text(
+                            evento.nombre,
+                            style: const TextStyle(
+                              color: Color(0xFF8B1B1B),
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14,
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                      onChanged: (Evento? evento) {
+                        if (mounted) {
+                          setState(() {
+                            _eventoSeleccionado = evento;
+                          });
+                        }
+                        if (evento != null) {
+                          _cargarZonasDeEvento(evento.id);
+                        } else {
+                          if (mounted) {
+                            setState(() {
+                              _zonas = [];
+                            });
+                          }
+                        }
+                      },
+                    ),
+                  ),
+                  if (_zonas.isNotEmpty) ...[
+                    const SizedBox(height: 16),
+                    Text(
+                      '¡${_zonas.length} zona${_zonas.length != 1 ? 's' : ''} encontrada${_zonas.length != 1 ? 's' : ''}!',
+                      style: TextStyle(
+                        color: Colors.grey[600],
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
           ),
-          // Mapa OpenStreetMap
+          // Mapa OpenStreetMap elegante
           Expanded(
             child: Container(
-              margin: const EdgeInsets.all(16.0),
+              margin: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: const Color(0xFFF1F5F9),
+                  width: 1.5,
+                ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 10,
-                    offset: const Offset(0, 5),
+                    color: Colors.black.withOpacity(0.08),
+                    blurRadius: 25,
+                    offset: const Offset(0, 12),
+                    spreadRadius: 0,
+                  ),
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.04),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
                   ),
                 ],
               ),
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(20),
                 child: FlutterMap(
                   mapController: _mapController,
                   options: MapOptions(
