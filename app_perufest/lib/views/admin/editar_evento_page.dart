@@ -38,8 +38,8 @@ class _EditarEventoPageState extends State<EditarEventoPage> {
   File? _nuevaImagenSeleccionada;
   bool _subiendoImagen = false;
   bool _imagenCambiada = false;
-  // PDF opcional (base64 + nombre)
-  String? _pdfBase64;
+  // PDF opcional (archivo)
+  File? _pdfArchivo;
   String? _pdfNombre;
 
   final List<String> _categorias = [
@@ -85,7 +85,6 @@ class _EditarEventoPageState extends State<EditarEventoPage> {
     _horaInicio = TimeOfDay.fromDateTime(fechaInicioPeruana);
     _horaFin = TimeOfDay.fromDateTime(fechaFinPeruana);
     // Cargar PDF existente (si hay)
-    _pdfBase64 = evento.pdfBase64;
     _pdfNombre = evento.pdfNombre;
   }
 
@@ -551,11 +550,11 @@ class _EditarEventoPageState extends State<EditarEventoPage> {
 
                       // Widget para subir PDF opcional
                       SubirPDFWidget(
-                        pdfActual: _pdfBase64,
+                        pdfActualUrl: widget.evento.pdfUrl,
                         nombreActual: _pdfNombre,
-                        onPDFSelected: (base64, nombre) {
+                        onPDFSelected: (file, nombre) {
                           setState(() {
-                            _pdfBase64 = base64.isNotEmpty ? base64 : null;
+                            _pdfArchivo = file;
                             _pdfNombre = nombre.isNotEmpty ? nombre : null;
                           });
                         },
@@ -787,13 +786,13 @@ class _EditarEventoPageState extends State<EditarEventoPage> {
       estado: _estadoSeleccionado,
       fechaActualizacion: TimezoneUtils.now(),
       tipoEvento: _tipoEventoSeleccionado,
-      pdfBase64: _pdfBase64,
       pdfNombre: _pdfNombre,
     );
 
     final exito = await eventosViewModel.actualizarEvento(
       widget.evento.id,
       eventoActualizado,
+      pdfFile: _pdfArchivo, // Pasar archivo PDF
     );
 
     if (exito && mounted) {

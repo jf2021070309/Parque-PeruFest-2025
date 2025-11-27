@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
-import 'dart:convert';
 import 'dart:io';
 
 class SubirPDFWidget extends StatefulWidget {
-  final Function(String base64, String nombre) onPDFSelected;
-  final String? pdfActual; // PDF actual en base64 (si existe)
+  final Function(File? file, String nombre) onPDFSelected;
+  final String? pdfActualUrl; // URL del PDF actual en Supabase
   final String? nombreActual; // Nombre del archivo actual
   
   const SubirPDFWidget({
     Key? key,
     required this.onPDFSelected,
-    this.pdfActual,
+    this.pdfActualUrl,
     this.nombreActual,
   }) : super(key: key);
 
@@ -22,13 +21,12 @@ class SubirPDFWidget extends StatefulWidget {
 class _SubirPDFWidgetState extends State<SubirPDFWidget> {
   String? _nombreArchivo;
   bool _cargando = false;
-  String? _pdfBase64;
+  File? _archivoSeleccionado;
 
   @override
   void initState() {
     super.initState();
     _nombreArchivo = widget.nombreActual;
-    _pdfBase64 = widget.pdfActual;
   }
 
   Future<void> _seleccionarPDF() async {
@@ -44,26 +42,26 @@ class _SubirPDFWidgetState extends State<SubirPDFWidget> {
       if (result != null && result.files.single.path != null) {
         File file = File(result.files.single.path!);
         
-        // Verificar tamaño del archivo (máximo 5MB)
+        // Verificar tamaño del archivo (máximo 5MB para Supabase Storage)
         int fileSize = await file.length();
+        double fileSizeMB = fileSize / (1024 * 1024);
+        
         if (fileSize > 5 * 1024 * 1024) {
-          _mostrarError('El archivo es demasiado grande. Máximo 5MB permitido.');
+          _mostrarError('El archivo es demasiado grande (${fileSizeMB.toStringAsFixed(1)}MB). Máximo 5MB permitido.');
           return;
         }
         
-        List<int> bytes = await file.readAsBytes();
-        String base64 = base64Encode(bytes);
-        
         setState(() {
+          _archivoSeleccionado = file;
           _nombreArchivo = result.files.single.name;
-          _pdfBase64 = base64;
         });
         
-        widget.onPDFSelected(base64, result.files.single.name);
+        // Notificar al widget padre con el archivo (no Base64)
+        widget.onPDFSelected(_archivoSeleccionado, result.files.single.name);
         
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('PDF cargado correctamente'),
+          SnackBar(
+            content: Text('PDF seleccionado: ${result.files.single.name} (${fileSizeMB.toStringAsFixed(1)}MB)'),
             backgroundColor: Colors.green,
           ),
         );
@@ -78,10 +76,11 @@ class _SubirPDFWidgetState extends State<SubirPDFWidget> {
   void _eliminarPDF() {
     setState(() {
       _nombreArchivo = null;
-      _pdfBase64 = null;
+      _archivoSeleccionado = null;
     });
     
-    widget.onPDFSelected('', ''); // Enviar valores vacíos para eliminar
+    // Enviar null para eliminar
+    widget.onPDFSelected(null, '');
     
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
@@ -132,7 +131,7 @@ class _SubirPDFWidgetState extends State<SubirPDFWidget> {
           const SizedBox(height: 12),
           
           if (_nombreArchivo != null) ...[
-            // Mostrar archivo actual
+            // Mostrar archivo actual o nuevo
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
@@ -153,7 +152,7 @@ class _SubirPDFWidgetState extends State<SubirPDFWidget> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Archivo cargado:',
+                          _archivoSeleccionado != null ? 'Archivo seleccionado:' : 'Archivo actual:',
                           style: TextStyle(
                             fontSize: 12,
                             color: Colors.green.shade700,
@@ -179,6 +178,37 @@ class _SubirPDFWidgetState extends State<SubirPDFWidget> {
                       size: 20,
                     ),
                     tooltip: 'Eliminar PDF',
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+          ] else if (widget.pdfActualUrl != null) ...[
+            // Mostrar que hay un PDF en el servidor
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.blue.shade50,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.blue.shade200),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.cloud_done,
+                    color: Colors.blue,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'PDF almacenado en el servidor',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.blue.shade800,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                   ),
                 ],
               ),

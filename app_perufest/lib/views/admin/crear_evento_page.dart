@@ -33,8 +33,8 @@ class _CrearEventoPageState extends State<CrearEventoPage> {
   // Variables para imagen
   File? _imagenSeleccionada;
   bool _subiendoImagen = false;
-  // PDF opcional (base64 + nombre)
-  String? _pdfBase64;
+  // PDF opcional (archivo)
+  File? _pdfArchivo;
   String? _pdfNombre;
 
   final List<String> _categorias = [
@@ -419,11 +419,11 @@ class _CrearEventoPageState extends State<CrearEventoPage> {
 
               // Widget para subir PDF opcional (una página)
               SubirPDFWidget(
-                pdfActual: _pdfBase64,
+                pdfActualUrl: null, // Nuevo evento, no hay PDF actual
                 nombreActual: _pdfNombre,
-                onPDFSelected: (base64, nombre) {
+                onPDFSelected: (file, nombre) {
                   setState(() {
-                    _pdfBase64 = base64.isNotEmpty ? base64 : null;
+                    _pdfArchivo = file;
                     _pdfNombre = nombre.isNotEmpty ? nombre : null;
                   });
                 },
@@ -647,7 +647,6 @@ class _CrearEventoPageState extends State<CrearEventoPage> {
       fechaCreacion: TimezoneUtils.now(),
       fechaActualizacion: TimezoneUtils.now(),
       tipoEvento: _tipoEventoSeleccionado,
-      pdfBase64: _pdfBase64,
       pdfNombre: _pdfNombre,
     );
 
@@ -655,7 +654,8 @@ class _CrearEventoPageState extends State<CrearEventoPage> {
       context,
       listen: false,
     );
-    final exito = await eventosViewModel.crearEvento(evento);
+    // Pasar el archivo PDF al ViewModel
+    final exito = await eventosViewModel.crearEvento(evento, pdfFile: _pdfArchivo);
 
     if (exito && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(

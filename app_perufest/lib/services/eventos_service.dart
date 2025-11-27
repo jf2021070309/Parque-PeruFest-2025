@@ -1,25 +1,49 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
+import 'dart:io';
 import '../models/evento.dart';
 import '../services/timezone.dart';
+import '../services/supabase_storage_service.dart';
 
 class EventosService {
   static final FirebaseFirestore _db = FirebaseFirestore.instance;
   static const String _collection = 'eventos';
+  static final SupabaseStorageService _supabaseStorage = SupabaseStorageService();
 
-  static Future<String> crearEvento(Evento evento) async {
+  static Future<String> crearEvento(Evento evento, {File? pdfFile}) async {
     try {
       final now = TimezoneUtils.now(); // Use Peru timezone
+      
+      // Primero crear el evento para obtener el ID
       final eventoData = evento.copyWith(
         fechaCreacion: now,
         fechaActualizacion: now,
       ).toJson();
 
       final docRef = await _db.collection(_collection).add(eventoData);
+      final eventoId = docRef.id;
+      
       if (kDebugMode) {
-        debugPrint('Evento creado con ID: ${docRef.id}');
+        debugPrint('Evento creado con ID: $eventoId');
       }
-      return docRef.id;
+      
+      // Si hay PDF, subirlo después de crear el evento
+      if (pdfFile != null) {
+        final pdfUrl = await _supabaseStorage.subirPDF(pdfFile, eventoId);
+        
+        if (pdfUrl != null) {
+          // Actualizar el evento con la URL del PDF
+          await _db.collection(_collection).doc(eventoId).update({
+            'pdfUrl': pdfUrl,
+          });
+          
+          if (kDebugMode) {
+            debugPrint('PDF subido a Supabase Storage: $pdfUrl');
+          }
+        }
+      }
+      
+      return eventoId;
     } catch (e) {
       if (kDebugMode) {
         debugPrint('Error al crear evento: $e');
@@ -116,9 +140,30 @@ class EventosService {
     }
   }
 
-  static Future<void> actualizarEvento(String id, Evento evento) async {
+  static Future<void> actualizarEvento(String id, Evento evento, {File? pdfFile}) async {
     try {
-      final eventoData = evento.copyWith(
+      Evento eventoActualizado = evento;
+      
+      // Si hay un archivo PDF, subirlo a Supabase Storage
+      if (pdfFile != null) {
+        final pdfUrl = await _supabaseStorage.subirPDF(pdfFile, id);
+        
+        if (pdfUrl != null) {
+          // Actualizar evento con la URL del PDF
+          eventoActualizado = evento.copyWith(
+            pdfUrl: pdfUrl,
+            pdfBase64: null, // Limpiar Base64 si existe
+          );
+          
+          if (kDebugMode) {
+            debugPrint('PDF subido a Supabase Storage: $pdfUrl');
+          }
+        } else {
+          throw Exception('Error al subir el archivo PDF');
+        }
+      }
+      
+      final eventoData = eventoActualizado.copyWith(
         fechaActualizacion: TimezoneUtils.now(), // Use Peru timezone
       ).toJson();
       
@@ -137,6 +182,10 @@ class EventosService {
 
   static Future<void> eliminarEvento(String id) async {
     try {
+      // Eliminar PDF de Supabase Storage si existe
+      await _supabaseStorage.eliminarPDF(id);
+      
+      // Eliminar evento de Firestore
       await _db.collection(_collection).doc(id).delete();
       
       if (kDebugMode) {

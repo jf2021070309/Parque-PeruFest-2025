@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'dart:io';
 import '../models/evento.dart';
 import '../services/eventos_service.dart';
 
@@ -48,11 +49,11 @@ class EventosViewModel extends ChangeNotifier {
     _isInitialized = false;
   }
 
-  Future<bool> crearEvento(Evento evento) async {
+  Future<bool> crearEvento(Evento evento, {File? pdfFile}) async {
     try {
       _setState(EventosState.loading);
       
-      final id = await EventosService.crearEvento(evento);
+      final id = await EventosService.crearEvento(evento, pdfFile: pdfFile);
       final nuevoEvento = evento.copyWith(id: id);
       
       _eventos.add(nuevoEvento);
@@ -72,11 +73,11 @@ class EventosViewModel extends ChangeNotifier {
     }
   }
 
-  Future<bool> actualizarEvento(String id, Evento evento) async {
+  Future<bool> actualizarEvento(String id, Evento evento, {File? pdfFile}) async {
     try {
       _setState(EventosState.loading);
       
-      await EventosService.actualizarEvento(id, evento);
+      await EventosService.actualizarEvento(id, evento, pdfFile: pdfFile);
       
       final index = _eventos.indexWhere((e) => e.id == id);
       if (index != -1) {

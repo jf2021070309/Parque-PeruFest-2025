@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
-import 'dart:io';
-import 'dart:convert';
-import 'package:path_provider/path_provider.dart';
-import 'package:open_file/open_file.dart';
 import '../../models/evento.dart';
 import 'actividades_evento_view.dart';
 import 'stands_evento_view.dart';
+import 'pdf_viewer_page.dart';
 
 class EventoOpcionesView extends StatelessWidget {
   final Evento evento;
@@ -354,72 +351,44 @@ class EventoOpcionesView extends StatelessWidget {
 
   // Método para verificar si el evento tiene PDF
   bool _tienePDF() {
+    // Verificar primero si tiene URL de Supabase (nuevo sistema)
+    if (evento.pdfUrl != null && evento.pdfUrl!.isNotEmpty) {
+      return true;
+    }
+    // Compatibilidad con sistema antiguo Base64
     return evento.pdfBase64 != null && evento.pdfBase64!.isNotEmpty;
   }
 
-  // Método para abrir el PDF desde base64
+  // Método para abrir el PDF
   Future<void> _abrirPDF(BuildContext context) async {
-    final messenger = ScaffoldMessenger.of(context);
-
-    // Mostrar indicador de carga
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return const Center(
-          child: CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF8B1B1B)),
+    // Si tiene URL de Supabase (nuevo sistema)
+    if (evento.pdfUrl != null && evento.pdfUrl!.isNotEmpty) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PDFViewerPage(
+            pdfUrl: evento.pdfUrl!,
+            fileName: evento.pdfNombre ?? 'documento_${evento.nombre}.pdf',
           ),
-        );
-      },
-    );
-
-    try {
-      // Decodificar base64 a bytes
-      final bytes = base64Decode(evento.pdfBase64!);
-
-      // Obtener directorio temporal
-      final dir = await getTemporaryDirectory();
-      final fileName = evento.pdfNombre ?? 'documento_evento_${evento.id}.pdf';
-      final filePath = '${dir.path}/$fileName';
-
-      // Crear archivo temporal
-      final file = File(filePath);
-      await file.writeAsBytes(bytes, flush: true);
-
-      // Cerrar indicador de carga
-      Navigator.of(context).pop();
-
-      // Abrir archivo
-      final result = await OpenFile.open(filePath);
-
-      // Mostrar mensaje según el resultado
-      if (result.type == ResultType.done) {
-        messenger.showSnackBar(
-          const SnackBar(
-            content: Text('Documento PDF abierto correctamente'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      } else {
-        messenger.showSnackBar(
-          SnackBar(
-            content: Text('Error al abrir PDF: ${result.message}'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    } catch (e) {
-      // Cerrar indicador de carga si hay error
-      Navigator.of(context).pop();
-
-      messenger.showSnackBar(
-        SnackBar(
-          content: Text('Error al procesar el documento: $e'),
-          backgroundColor: Colors.red,
         ),
       );
     }
+    // Compatibilidad con sistema antiguo Base64
+    else if (evento.pdfBase64 != null && evento.pdfBase64!.isNotEmpty) {
+      _abrirPDFDesdeBase64(context);
+    }
+  }
+
+  // Método legacy para PDFs en Base64 (por compatibilidad)
+  Future<void> _abrirPDFDesdeBase64(BuildContext context) async {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Este documento usa el formato antiguo. Por favor, pide al administrador que lo actualice.'),
+        backgroundColor: Colors.orange,
+        duration: Duration(seconds: 3),
+      ),
+    );
+    // Aquí podrías implementar la lógica del Base64 si quieres mantener compatibilidad completa
   }
 
   String _formatearFecha(DateTime fecha) {

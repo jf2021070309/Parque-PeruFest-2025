@@ -17,6 +17,7 @@ class Evento {
   final String tipoEvento;
   final String? pdfBase64;
   final String? pdfNombre;
+  final String? pdfUrl; // URL de Supabase Storage
 
   Evento({
     required this.id,
@@ -35,6 +36,7 @@ class Evento {
     required this.tipoEvento,
     this.pdfBase64,
     this.pdfNombre,
+    this.pdfUrl,
   });
 
   // Add getters for Peru timezone
@@ -122,6 +124,7 @@ class Evento {
       tipoEvento: json['tipoEvento'] ?? 'gratis', // default gratis
       pdfBase64: json['pdfBase64'],
       pdfNombre: json['pdfNombre'],
+      pdfUrl: json['pdfUrl'],
     );
   }
 
@@ -142,6 +145,7 @@ class Evento {
       'tipoEvento': tipoEvento,
       if (pdfBase64 != null) 'pdfBase64': pdfBase64,
       if (pdfNombre != null) 'pdfNombre': pdfNombre,
+      if (pdfUrl != null) 'pdfUrl': pdfUrl,
     };
   }
 
@@ -163,6 +167,7 @@ class Evento {
     String? tipoEvento,
     String? pdfBase64,
     String? pdfNombre,
+    String? pdfUrl,
   }) {
     return Evento(
       id: id ?? this.id,
@@ -181,6 +186,7 @@ class Evento {
       tipoEvento: tipoEvento ?? this.tipoEvento,
       pdfBase64: pdfBase64 ?? this.pdfBase64,
       pdfNombre: pdfNombre ?? this.pdfNombre,
+      pdfUrl: pdfUrl ?? this.pdfUrl,
     );
   }
 
