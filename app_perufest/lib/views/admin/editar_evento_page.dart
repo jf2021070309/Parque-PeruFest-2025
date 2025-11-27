@@ -181,37 +181,45 @@ class _EditarEventoPageState extends State<EditarEventoPage> {
               const SizedBox(height: 16),
 
               // Tipo de evento
-              Row(
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(Icons.label, color: Colors.blue),
-                  SizedBox(width: 12),
-                  Text(
-                    'Tipo de evento *:',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                  Row(
+                    children: [
+                      const Icon(Icons.label, color: Colors.blue),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Tipo de evento *',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
                   ),
-                  SizedBox(width: 16),
-                  Expanded(
-                    child: Row(
-                      children:
-                          _tiposEvento
-                              .map(
-                                (tipo) => Expanded(
-                                  child: RadioListTile<String>(
-                                    title: Text(
-                                      tipo == 'gratis' ? 'Gratis' : 'De pago',
-                                    ),
-                                    value: tipo,
-                                    groupValue: _tipoEventoSeleccionado,
-                                    onChanged: (value) {
-                                      setState(() {
-                                        _tipoEventoSeleccionado = value!;
-                                      });
-                                    },
+                  const SizedBox(height: 8),
+                  Row(
+                    children:
+                        _tiposEvento
+                            .map(
+                              (tipo) => Expanded(
+                                child: RadioListTile<String>(
+                                  contentPadding: EdgeInsets.zero,
+                                  title: Text(
+                                    tipo == 'gratis' ? 'Gratis' : 'De pago',
+                                    style: const TextStyle(fontSize: 14),
                                   ),
+                                  value: tipo,
+                                  groupValue: _tipoEventoSeleccionado,
+                                  onChanged: (value) {
+                                    setState(() {
+                                      _tipoEventoSeleccionado = value!;
+                                    });
+                                  },
                                 ),
-                              )
-                              .toList(),
-                    ),
+                              ),
+                            )
+                            .toList(),
                   ),
                 ],
               ),
