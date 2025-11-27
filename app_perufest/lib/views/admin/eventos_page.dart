@@ -177,80 +177,114 @@ class _EventosPageState extends State<EventosPage> {
   Widget _buildEventoCard(BuildContext context, Evento evento) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: _getColorEstado(evento.estado),
-          child: Icon(
-            _getIconoCategoria(evento.categoria),
-            color: Colors.white,
-          ),
-        ),
-        title: Text(
-          evento.nombre,
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('${evento.lugar} • ${evento.categoria}'),
-            Text(
-              '${_formatearFecha(evento.fechaInicio)} - ${_formatearFecha(evento.fechaFin)}',
-              style: TextStyle(
-                color: Colors.grey.shade600,
-                fontSize: 12,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Imagen del evento
+          if (evento.imagenUrl.isNotEmpty)
+            ClipRRect(
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(12),
+                topRight: Radius.circular(12),
               ),
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              decoration: BoxDecoration(
-                color: _getColorEstado(evento.estado).withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                evento.estado.toUpperCase(),
-                style: TextStyle(
-                  color: _getColorEstado(evento.estado),
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
+              child: Image.network(
+                evento.imagenUrl,
+                height: 160,
+                width: double.infinity,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => Container(
+                  height: 160,
+                  color: Colors.grey[300],
+                  child: const Center(child: Icon(Icons.broken_image)),
                 ),
               ),
             ),
-          ],
-        ),
-        trailing: PopupMenuButton(
-          itemBuilder: (context) => [
-            const PopupMenuItem(
-              value: 'ver',
-              child: ListTile(
-                leading: Icon(Icons.visibility),
-                title: Text('Ver detalles'),
+          ListTile(
+            leading: CircleAvatar(
+              backgroundColor: _getColorEstado(evento.estado),
+              child: Icon(
+                _getIconoCategoria(evento.categoria),
+                color: Colors.white,
               ),
             ),
-            const PopupMenuItem(
-              value: 'editar',
-              child: ListTile(
-                leading: Icon(Icons.edit),
-                title: Text('Editar'),
-              ),
+            title: Text(
+              evento.nombre,
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
-            const PopupMenuItem(
-              value: 'eliminar',
-              child: ListTile(
-                leading: Icon(Icons.delete, color: Colors.red),
-                title: Text('Eliminar'),
-              ),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (evento.descripcion.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 4.0),
+                    child: Text(
+                      evento.descripcion,
+                      style: const TextStyle(fontSize: 13, color: Colors.black87),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                Text('${evento.lugar} • ${evento.categoria}'),
+                Text(
+                  '${_formatearFecha(evento.fechaInicio)} - ${_formatearFecha(evento.fechaFin)}',
+                  style: TextStyle(
+                    color: Colors.grey.shade600,
+                    fontSize: 12,
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: _getColorEstado(evento.estado).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    evento.estado.toUpperCase(),
+                    style: TextStyle(
+                      color: _getColorEstado(evento.estado),
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
-          onSelected: (value) => _manejarAccion(context, value, evento),
-        ),
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => DetalleEventoPage(evento: evento),
+            trailing: PopupMenuButton(
+              itemBuilder: (context) => [
+                const PopupMenuItem(
+                  value: 'ver',
+                  child: ListTile(
+                    leading: Icon(Icons.visibility),
+                    title: Text('Ver detalles'),
+                  ),
+                ),
+                const PopupMenuItem(
+                  value: 'editar',
+                  child: ListTile(
+                    leading: Icon(Icons.edit),
+                    title: Text('Editar'),
+                  ),
+                ),
+                const PopupMenuItem(
+                  value: 'eliminar',
+                  child: ListTile(
+                    leading: Icon(Icons.delete, color: Colors.red),
+                    title: Text('Eliminar'),
+                  ),
+                ),
+              ],
+              onSelected: (value) => _manejarAccion(context, value, evento),
             ),
-          );
-        },
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => DetalleEventoPage(evento: evento),
+                ),
+              );
+            },
+          ),
+        ],
       ),
     );
   }

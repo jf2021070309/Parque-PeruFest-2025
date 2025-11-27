@@ -116,35 +116,53 @@ class EventoOpcionesView extends StatelessWidget {
                             ],
                           ),
                           const SizedBox(height: 12),
-                          // Botón para ver información detallada (PDF)
-                          SizedBox(
-                            width: 220,
-                            child: ElevatedButton.icon(
-                              icon: const Icon(Icons.picture_as_pdf, size: 18),
-                              label: Text(
-                                _tienePDF()
-                                    ? 'Ver información detallada'
-                                    : 'Sin información adicional',
-                                style: const TextStyle(fontSize: 13),
-                              ),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor:
-                                    _tienePDF()
-                                        ? const Color(0xFF8B1B1B)
-                                        : Colors.grey,
-                                foregroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 10,
-                                  horizontal: 14,
-                                ),
-                              ),
-                              onPressed:
-                                  _tienePDF() ? () => _abrirPDF(context) : null,
-                            ),
-                          ),
+                         // Imagen del evento (fuera del botón)
+                         if (evento.imagenUrl.isNotEmpty) ...[
+                           ClipRRect(
+                             borderRadius: BorderRadius.circular(12),
+                             child: Image.network(
+                               evento.imagenUrl,
+                               height: 160,
+                               width: double.infinity,
+                               fit: BoxFit.cover,
+                               errorBuilder: (context, error, stackTrace) => Container(
+                                 height: 160,
+                                 color: Colors.grey[300],
+                                 child: const Center(child: Icon(Icons.broken_image, size: 48)),
+                               ),
+                             ),
+                           ),
+                           const SizedBox(height: 12),
+                         ],
+                         // Botón para ver información detallada (PDF)
+                         SizedBox(
+                           width: 220,
+                           child: ElevatedButton.icon(
+                             icon: const Icon(Icons.picture_as_pdf, size: 18),
+                             label: Text(
+                               _tienePDF()
+                                   ? 'Ver información detallada'
+                                   : 'Sin información adicional',
+                               style: const TextStyle(fontSize: 13),
+                             ),
+                             style: ElevatedButton.styleFrom(
+                               backgroundColor:
+                                   _tienePDF()
+                                       ? const Color(0xFF8B1B1B)
+                                       : Colors.grey,
+                               foregroundColor: Colors.white,
+                               shape: RoundedRectangleBorder(
+                                 borderRadius: BorderRadius.circular(12),
+                               ),
+                               padding: const EdgeInsets.symmetric(
+                                 vertical: 10,
+                                 horizontal: 14,
+                               ),
+                             ),
+                             onPressed:
+                                 _tienePDF() ? () => _abrirPDF(context) : null,
+                           ),
+                         ),
 
                           const SizedBox(height: 8),
                           // Texto referencial bajo el botón
@@ -162,6 +180,18 @@ class EventoOpcionesView extends StatelessWidget {
                       ),
                     ),
 
+                               // Descripción del evento
+                               if (evento.descripcion.isNotEmpty) ...[
+                                 Text(
+                                   evento.descripcion,
+                                   style: const TextStyle(
+                                     fontSize: 15,
+                                     color: Color(0xFF8B1B1B),
+                                   ),
+                                   textAlign: TextAlign.center,
+                                 ),
+                                 const SizedBox(height: 12),
+                               ],
                     const SizedBox(height: 24),
 
                     // Título de opciones

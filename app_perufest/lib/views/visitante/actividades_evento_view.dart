@@ -370,6 +370,36 @@ class _ActividadesEventoViewState extends State<ActividadesEventoView>
 
                 const SizedBox(height: 12),
 
+                  // Imagen del evento (después del nombre)
+                  if (widget.evento.imagenUrl.isNotEmpty) ...[
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.network(
+                        widget.evento.imagenUrl,
+                        height: 160,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Container(
+                          height: 160,
+                          color: Colors.grey[300],
+                          child: const Center(child: Icon(Icons.broken_image, size: 48)),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+
+                  // Descripción del evento (después de la imagen)
+                  if (widget.evento.descripcion.isNotEmpty) ...[
+                    Text(
+                      widget.evento.descripcion,
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.95),
+                        fontSize: 15,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
                 // Información adicional
                 Row(
                   children: [
