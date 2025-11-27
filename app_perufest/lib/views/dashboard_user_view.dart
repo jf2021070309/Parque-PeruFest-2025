@@ -59,7 +59,7 @@ class _DashboardUserViewState extends State<DashboardUserView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFE2E8F0),
+      backgroundColor: const Color.fromARGB(255, 122, 0, 37),
       body: Column(
         children: [
           // Banner único global - aparece en todas las pestañas
@@ -114,22 +114,23 @@ class _DashboardUserViewState extends State<DashboardUserView> {
 
   Widget _buildSliverAppBar() {
     return SliverAppBar(
-      expandedHeight: 180.0,
+      expandedHeight: 140.0,
       floating: false,
       pinned: true,
-      backgroundColor: const Color(0xFF8B1B1B),
+      backgroundColor: const Color.fromARGB(255, 122, 0, 37),
       elevation: 0,
       surfaceTintColor: Colors.transparent,
-      shadowColor: Colors.black.withOpacity(0.1),
+      shadowColor: Colors.black.withOpacity(0.2),
       forceElevated: true,
+      automaticallyImplyLeading: false,
       flexibleSpace: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.centerLeft,
             end: Alignment.centerRight,
             colors: [
-              Color(0xFF8B1B1B),
-              Color(0xFFA52A2A),
+              Color.fromARGB(255, 122, 0, 37),
+              Color.fromARGB(255, 140, 0, 45),
             ],
           ),
           boxShadow: [
@@ -175,9 +176,14 @@ class _DashboardUserViewState extends State<DashboardUserView> {
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                Color(0xFFB91C1C),
-                Color(0xFF8B1B1B),
+                Color.fromARGB(255, 140, 0, 45),
+                Color.fromARGB(255, 122, 0, 37),
               ],
+            ),
+            image: DecorationImage(
+              image: AssetImage('assets/images/fondo.jpg'),
+              fit: BoxFit.cover,
+              opacity: 0.08,
             ),
           ),
           child: Stack(
@@ -327,24 +333,26 @@ class _DashboardUserViewState extends State<DashboardUserView> {
     return GestureDetector(
       onTap: () => _verActividadesEvento(evento),
       child: Container(
-        margin: const EdgeInsets.only(bottom: 16),
+        margin: const EdgeInsets.only(bottom: 20),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(25),
           border: Border.all(
-            color: const Color(0xFFF1F5F9),
-            width: 1.5,
+            color: Colors.white.withOpacity(0.8),
+            width: 1,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 20,
-              offset: const Offset(0, 8),
+              color: Colors.black.withOpacity(0.15),
+              blurRadius: 30,
+              offset: const Offset(0, 15),
+              spreadRadius: 0,
             ),
             BoxShadow(
-              color: Colors.black.withOpacity(0.02),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 10,
+              offset: const Offset(0, 5),
+              spreadRadius: -5,
             ),
           ],
         ),
@@ -363,7 +371,7 @@ class _DashboardUserViewState extends State<DashboardUserView> {
                         vertical: 6,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF8B1B1B).withOpacity(0.08),
+                        color: const Color.fromARGB(255, 122, 0, 37).withOpacity(0.08),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Row(
@@ -373,7 +381,7 @@ class _DashboardUserViewState extends State<DashboardUserView> {
                             width: 8,
                             height: 8,
                             decoration: const BoxDecoration(
-                              color: Color(0xFF8B1B1B),
+                              color: Color.fromARGB(255, 122, 0, 37),
                               shape: BoxShape.circle,
                             ),
                           ),
@@ -382,7 +390,7 @@ class _DashboardUserViewState extends State<DashboardUserView> {
                             child: Text(
                               evento.categoria,
                               style: const TextStyle(
-                                color: Color(0xFF8B1B1B),
+                                color: Color.fromARGB(255, 122, 0, 37),
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
                                 letterSpacing: 0.2,
@@ -444,12 +452,12 @@ class _DashboardUserViewState extends State<DashboardUserView> {
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFFEF2F2),
+                          color: const Color.fromARGB(255, 122, 0, 37).withOpacity(0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: const Icon(
                           Icons.calendar_today_outlined,
-                          color: Color(0xFF8B1B1B),
+                          color: Color.fromARGB(255, 122, 0, 37),
                           size: 16,
                         ),
                       ),
@@ -485,12 +493,12 @@ class _DashboardUserViewState extends State<DashboardUserView> {
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFFEF2F2),
+                          color: const Color.fromARGB(255, 122, 0, 37).withOpacity(0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: const Icon(
                           Icons.location_on_outlined,
-                          color: Color(0xFF8B1B1B),
+                          color: Color.fromARGB(255, 122, 0, 37),
                           size: 16,
                         ),
                       ),
@@ -601,8 +609,11 @@ class _DashboardUserViewState extends State<DashboardUserView> {
             icon: const Icon(Icons.refresh),
             label: const Text('Actualizar'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF8B1B1B),
+              backgroundColor: const Color.fromARGB(255, 122, 0, 37),
               foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
           ),
         ],
@@ -688,7 +699,7 @@ class _DashboardUserViewState extends State<DashboardUserView> {
         },
         type: BottomNavigationBarType.fixed,
         backgroundColor: Colors.transparent,
-        selectedItemColor: const Color(0xFF8B1B1B),
+        selectedItemColor: const Color.fromARGB(255, 122, 0, 37),
         unselectedItemColor: const Color(0xFF64748B),
         selectedLabelStyle: const TextStyle(
           fontWeight: FontWeight.w700,
