@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../models/evento.dart';
 import 'actividades_evento_view.dart';
 import 'stands_evento_view.dart';
 import 'pdf_viewer_page.dart';
 
-class EventoOpcionesView extends StatelessWidget {
+class EventoOpcionesView extends StatefulWidget {
   final Evento evento;
   final String userId;
 
@@ -15,11 +16,59 @@ class EventoOpcionesView extends StatelessWidget {
   });
 
   @override
+  State<EventoOpcionesView> createState() => _EventoOpcionesViewState();
+}
+
+class _EventoOpcionesViewState extends State<EventoOpcionesView> {
+  bool _pdfExiste = false;
+  bool _verificandoPdf = true;
+  String? _pdfUrlPublica;
+
+  @override
+  void initState() {
+    super.initState();
+    _verificarExistenciaPDF();
+  }
+
+  /// Verifica si existe un PDF en Supabase Storage para este evento
+  Future<void> _verificarExistenciaPDF() async {
+    try {
+      final supabase = Supabase.instance.client;
+      const bucket = 'eventos';
+      final fileName = 'evento_${widget.evento.id}.pdf';
+      final filePath = 'pdfs/$fileName';
+
+      // Obtener la URL pública
+      final publicUrl = supabase.storage.from(bucket).getPublicUrl(filePath);
+
+      // Intentar listar el archivo para verificar que existe
+      final files = await supabase.storage.from(bucket).list(path: 'pdfs');
+      
+      final existe = files.any((file) => file.name == fileName);
+
+      if (mounted) {
+        setState(() {
+          _pdfExiste = existe;
+          _pdfUrlPublica = existe ? publicUrl : null;
+          _verificandoPdf = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _pdfExiste = false;
+          _verificandoPdf = false;
+        });
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          evento.nombre,
+          widget.evento.nombre,
           style: const TextStyle(
             fontWeight: FontWeight.bold,
             color: Colors.white,
@@ -84,7 +133,7 @@ class EventoOpcionesView extends StatelessWidget {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            '${_formatearFecha(evento.fechaInicio)} - ${_formatearFecha(evento.fechaFin)}',
+                            '${_formatearFecha(widget.evento.fechaInicio)} - ${_formatearFecha(widget.evento.fechaFin)}',
                             style: const TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
@@ -104,7 +153,7 @@ class EventoOpcionesView extends StatelessWidget {
                               const SizedBox(width: 4),
                               Flexible(
                                 child: Text(
-                                  evento.lugar,
+                                  widget.evento.lugar,
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: Colors.grey.shade600,
@@ -117,11 +166,11 @@ class EventoOpcionesView extends StatelessWidget {
                           ),
                           const SizedBox(height: 12),
                          // Imagen del evento (fuera del botón)
-                         if (evento.imagenUrl.isNotEmpty) ...[
+                         if (widget.evento.imagenUrl.isNotEmpty) ...[
                            ClipRRect(
                              borderRadius: BorderRadius.circular(12),
                              child: Image.network(
-                               evento.imagenUrl,
+                               widget.evento.imagenUrl,
                                height: 160,
                                width: double.infinity,
                                fit: BoxFit.cover,
@@ -137,39 +186,50 @@ class EventoOpcionesView extends StatelessWidget {
                          // Botón para ver información detallada (PDF)
                          SizedBox(
                            width: 220,
-                           child: ElevatedButton.icon(
-                             icon: const Icon(Icons.picture_as_pdf, size: 18),
-                             label: Text(
-                               _tienePDF()
-                                   ? 'Ver información detallada'
-                                   : 'Sin información adicional',
-                               style: const TextStyle(fontSize: 13),
-                             ),
-                             style: ElevatedButton.styleFrom(
-                               backgroundColor:
-                                   _tienePDF()
-                                       ? const Color(0xFF8B1B1B)
-                                       : Colors.grey,
-                               foregroundColor: Colors.white,
-                               shape: RoundedRectangleBorder(
-                                 borderRadius: BorderRadius.circular(12),
-                               ),
-                               padding: const EdgeInsets.symmetric(
-                                 vertical: 10,
-                                 horizontal: 14,
-                               ),
-                             ),
-                             onPressed:
-                                 _tienePDF() ? () => _abrirPDF(context) : null,
-                           ),
+                           child: _verificandoPdf
+                               ? const Center(
+                                   child: Padding(
+                                     padding: EdgeInsets.all(10.0),
+                                     child: CircularProgressIndicator(
+                                       color: Color(0xFF8B1B1B),
+                                     ),
+                                   ),
+                                 )
+                               : ElevatedButton.icon(
+                                   icon: const Icon(Icons.picture_as_pdf, size: 18),
+                                   label: Text(
+                                     _pdfExiste
+                                         ? 'Ver información detallada'
+                                         : 'Sin información adicional',
+                                     style: const TextStyle(fontSize: 13),
+                                   ),
+                                   style: ElevatedButton.styleFrom(
+                                     backgroundColor:
+                                         _pdfExiste
+                                             ? const Color(0xFF8B1B1B)
+                                             : Colors.grey,
+                                     foregroundColor: Colors.white,
+                                     shape: RoundedRectangleBorder(
+                                       borderRadius: BorderRadius.circular(12),
+                                     ),
+                                     padding: const EdgeInsets.symmetric(
+                                       vertical: 10,
+                                       horizontal: 14,
+                                     ),
+                                   ),
+                                   onPressed:
+                                       _pdfExiste ? () => _abrirPDF(context) : null,
+                                 ),
                          ),
 
                           const SizedBox(height: 8),
                           // Texto referencial bajo el botón
                           Text(
-                            _tienePDF()
-                                ? 'Documento con información más detallada del evento.'
-                                : 'No hay documento adicional disponible para este evento.',
+                            _verificandoPdf
+                                ? 'Verificando disponibilidad...'
+                                : _pdfExiste
+                                    ? 'Documento con información más detallada del evento.'
+                                    : 'No hay documento adicional disponible para este evento.',
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.grey.shade700,
@@ -181,9 +241,9 @@ class EventoOpcionesView extends StatelessWidget {
                     ),
 
                                // Descripción del evento
-                               if (evento.descripcion.isNotEmpty) ...[
+                               if (widget.evento.descripcion.isNotEmpty) ...[
                                  Text(
-                                   evento.descripcion,
+                                   widget.evento.descripcion,
                                    style: const TextStyle(
                                      fontSize: 15,
                                      color: Color(0xFF8B1B1B),
@@ -367,7 +427,7 @@ class EventoOpcionesView extends StatelessWidget {
       context,
       MaterialPageRoute(
         builder:
-            (context) => ActividadesEventoView(evento: evento, userId: userId),
+            (context) => ActividadesEventoView(evento: widget.evento, userId: widget.userId),
       ),
     );
   }
@@ -375,51 +435,39 @@ class EventoOpcionesView extends StatelessWidget {
   void _navegarAStands(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => StandsEventoView(evento: evento)),
+      MaterialPageRoute(builder: (context) => StandsEventoView(evento: widget.evento)),
     );
-  }
-
-  // Método para verificar si el evento tiene PDF
-  bool _tienePDF() {
-    // Verificar primero si tiene URL de Supabase (nuevo sistema)
-    if (evento.pdfUrl != null && evento.pdfUrl!.isNotEmpty) {
-      return true;
-    }
-    // Compatibilidad con sistema antiguo Base64
-    return evento.pdfBase64 != null && evento.pdfBase64!.isNotEmpty;
   }
 
   // Método para abrir el PDF
   Future<void> _abrirPDF(BuildContext context) async {
-    // Si tiene URL de Supabase (nuevo sistema)
-    if (evento.pdfUrl != null && evento.pdfUrl!.isNotEmpty) {
+    if (_pdfUrlPublica != null) {
       Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => PDFViewerPage(
-            pdfUrl: evento.pdfUrl!,
-            fileName: evento.pdfNombre ?? 'documento_${evento.nombre}.pdf',
+            pdfUrl: _pdfUrlPublica!,
+            fileName: widget.evento.pdfNombre ?? 'documento_${widget.evento.nombre}.pdf',
           ),
         ),
       );
-    }
-    // Compatibilidad con sistema antiguo Base64
-    else if (evento.pdfBase64 != null && evento.pdfBase64!.isNotEmpty) {
-      _abrirPDFDesdeBase64(context);
+    } else {
+      // Fallback a URL de Firestore si existe
+      if (widget.evento.pdfUrl != null && widget.evento.pdfUrl!.isNotEmpty) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PDFViewerPage(
+              pdfUrl: widget.evento.pdfUrl!,
+              fileName: widget.evento.pdfNombre ?? 'documento_${widget.evento.nombre}.pdf',
+            ),
+          ),
+        );
+      }
     }
   }
 
-  // Método legacy para PDFs en Base64 (por compatibilidad)
-  Future<void> _abrirPDFDesdeBase64(BuildContext context) async {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Este documento usa el formato antiguo. Por favor, pide al administrador que lo actualice.'),
-        backgroundColor: Colors.orange,
-        duration: Duration(seconds: 3),
-      ),
-    );
-    // Aquí podrías implementar la lógica del Base64 si quieres mantener compatibilidad completa
-  }
+
 
   String _formatearFecha(DateTime fecha) {
     return '${fecha.day}/${fecha.month}/${fecha.year}';
