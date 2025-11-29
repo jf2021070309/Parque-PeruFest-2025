@@ -60,200 +60,181 @@ class EventoOpcionesView extends StatelessWidget {
           Expanded(
             child: SingleChildScrollView(
               child: Padding(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     // Información del evento debajo de la imagen
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.calendar_today,
-                          size: 20,
-                          color: const Color(0xFF8B1B1B),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          '${_formatearFecha(evento.fechaInicio)} - ${_formatearFecha(evento.fechaFin)}',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                            color: Color(0xFF8B1B1B),
+                    Container(
+                      alignment: Alignment.center,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.calendar_today,
+                            size: 32,
+                            color: const Color(0xFF8B1B1B),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.location_on,
-                          size: 20,
-                          color: Colors.grey.shade600,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          evento.lugar,
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.grey.shade600,
+                          const SizedBox(height: 8),
+                          Text(
+                            '${_formatearFecha(evento.fechaInicio)} - ${_formatearFecha(evento.fechaFin)}',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: Color(0xFF8B1B1B),
+                            ),
+                            textAlign: TextAlign.center,
                           ),
+                          const SizedBox(height: 6),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.location_on,
+                                size: 14,
+                                color: Colors.grey.shade600,
+                              ),
+                              const SizedBox(width: 4),
+                              Flexible(
+                                child: Text(
+                                  evento.lugar,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey.shade600,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          SizedBox(
+                            width: 220,
+                            child: ElevatedButton.icon(
+                              icon: const Icon(Icons.picture_as_pdf, size: 18),
+                              label: Text(
+                                _tienePDF()
+                                    ? 'Ver información detallada'
+                                    : 'Sin información adicional',
+                                style: const TextStyle(fontSize: 13),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor:
+                                    _tienePDF()
+                                        ? const Color(0xFF8B1B1B)
+                                        : Colors.grey,
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 10,
+                                  horizontal: 14,
+                                ),
+                              ),
+                              onPressed:
+                                  _tienePDF() ? () => _abrirPDF(context) : null,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            _tienePDF()
+                                ? 'Documento con información más detallada del evento.'
+                                : 'No hay documento adicional disponible para este evento.',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey.shade700,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // Descripción del evento
+                    if (evento.descripcion.isNotEmpty) ...[
+                      Text(
+                        evento.descripcion,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          color: Color(0xFF8B1B1B),
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    ElevatedButton.icon(
-                      icon: const Icon(Icons.picture_as_pdf, size: 18),
-                      label: Text(
-                        _tienePDF()
-                            ? 'Ver información detallada'
-                            : 'Sin información adicional',
-                        style: const TextStyle(fontSize: 14),
+                        textAlign: TextAlign.center,
                       ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            _tienePDF() ? const Color(0xFF8B1B1B) : Colors.grey,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 10,
-                          horizontal: 14,
-                        ),
-                      ),
-                      onPressed: _tienePDF() ? () => _abrirPDF(context) : null,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      _tienePDF()
-                          ? 'Documento con información más detallada del evento.'
-                          : 'No hay documento adicional disponible para este evento.',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey.shade700,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      evento.descripcion,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        color: Color(0xFF8B1B1B),
-                      ),
-                    ),
+                      const SizedBox(height: 12),
+                    ],
                     const SizedBox(height: 24),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
+
+                    // Título de opciones
+                    Text(
+                      '¿Qué deseas explorar?',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF8B1B1B),
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Opciones
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(
-                          '¿Qué deseas explorar?',
-                          style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF5D4037), // Color marrón similar al mostrado
+                        Expanded(
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 8),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF5F5F5),
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.1),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: _buildOpcionCard(
+                              context: context,
+                              icon: Icons.event,
+                              title: 'Actividades',
+                              subtitle: 'Ver todas las actividades del evento',
+                              color: const Color(0xFF8B1B1B),
+                              onTap: () => _navegarAActividades(context),
+                            ),
                           ),
-                          textAlign: TextAlign.center,
                         ),
-                        const SizedBox(height: 24),
-                        Column(
-                          children: [
-                            Container(
-                              margin: const EdgeInsets.symmetric(vertical: 8),
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFF5F5F5), // Fondo claro similar al mostrado
-                                borderRadius: BorderRadius.circular(16),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.1),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
-                              ),
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    Icons.calendar_today,
-                                    size: 32,
-                                    color: const Color(0xFF795548), // Color marrón para el ícono
-                                  ),
-                                  const SizedBox(width: 16),
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Actividades',
-                                        style: const TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                          color: Color(0xFF5D4037),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        'Consulta el programa',
-                                        style: const TextStyle(
-                                          fontSize: 14,
-                                          color: Color(0xFF8D6E63),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
+                        Expanded(
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 8),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF5F5F5),
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.1),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
                             ),
-                            Container(
-                              margin: const EdgeInsets.symmetric(vertical: 8),
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFF5F5F5), // Fondo claro similar al mostrado
-                                borderRadius: BorderRadius.circular(16),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.1),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
-                              ),
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    Icons.store,
-                                    size: 32,
-                                    color: const Color(0xFF795548), // Color marrón para el ícono
-                                  ),
-                                  const SizedBox(width: 16),
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Stands',
-                                        style: const TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                          color: Color(0xFF5D4037),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        'Encuentra a los expositores',
-                                        style: const TextStyle(
-                                          fontSize: 14,
-                                          color: Color(0xFF8D6E63),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
+                            child: _buildOpcionCard(
+                              context: context,
+                              icon: Icons.store,
+                              title: 'Stands',
+                              subtitle: 'Explora los stands y empresas participantes',
+                              color: const Color(0xFFA52A2A),
+                              onTap: () => _navegarAStands(context),
                             ),
-                          ],
+                          ),
                         ),
                       ],
                     ),
+
+                    const SizedBox(height: 20),
                   ],
                 ),
               ),
