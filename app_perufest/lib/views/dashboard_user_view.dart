@@ -141,15 +141,6 @@ class _DashboardUserViewState extends State<DashboardUserView> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                Text(
-                  'Descubre eventos únicos',
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.85),
-                    fontSize: 15,
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
-                const SizedBox(height: 10),
                 Row(
                   children: [
                     Container(
@@ -175,6 +166,15 @@ class _DashboardUserViewState extends State<DashboardUserView> {
                       ),
                     ),
                   ],
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  'Descubre eventos únicos',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.85),
+                    fontSize: 15,
+                    fontWeight: FontWeight.w400,
+                  ),
                 ),
               ],
             ),

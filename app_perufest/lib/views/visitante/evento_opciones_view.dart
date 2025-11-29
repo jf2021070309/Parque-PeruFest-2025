@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../models/evento.dart';
 import 'actividades_evento_view.dart';
 import 'stands_evento_view.dart';
 import 'pdf_viewer_page.dart';
 
-class EventoOpcionesView extends StatefulWidget {
+class EventoOpcionesView extends StatelessWidget {
   final Evento evento;
   final String userId;
 
@@ -16,299 +15,251 @@ class EventoOpcionesView extends StatefulWidget {
   });
 
   @override
-  State<EventoOpcionesView> createState() => _EventoOpcionesViewState();
-}
-
-class _EventoOpcionesViewState extends State<EventoOpcionesView> {
-  bool _pdfExiste = false;
-  bool _verificandoPdf = true;
-  String? _pdfUrlPublica;
-
-  @override
-  void initState() {
-    super.initState();
-    _verificarExistenciaPDF();
-  }
-
-  /// Verifica si existe un PDF en Supabase Storage para este evento
-  Future<void> _verificarExistenciaPDF() async {
-    try {
-      final supabase = Supabase.instance.client;
-      const bucket = 'eventos';
-      final fileName = 'evento_${widget.evento.id}.pdf';
-      final filePath = 'pdfs/$fileName';
-
-      // Obtener la URL pública
-      final publicUrl = supabase.storage.from(bucket).getPublicUrl(filePath);
-
-      // Intentar listar el archivo para verificar que existe
-      final files = await supabase.storage.from(bucket).list(path: 'pdfs');
-      
-      final existe = files.any((file) => file.name == fileName);
-
-      if (mounted) {
-        setState(() {
-          _pdfExiste = existe;
-          _pdfUrlPublica = existe ? publicUrl : null;
-          _verificandoPdf = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _pdfExiste = false;
-          _verificandoPdf = false;
-        });
-      }
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          widget.evento.nombre,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
-        backgroundColor: const Color(0xFF8B1B1B),
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFF8B1B1B), Color(0xFFA52A2A)],
-            ),
-          ),
-        ),
-      ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [const Color(0xFF8B1B1B).withOpacity(0.1), Colors.white],
-          ),
-        ),
-        child: SafeArea(
-          child: SingleChildScrollView(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                minHeight:
-                    MediaQuery.of(context).size.height -
-                    MediaQuery.of(context).padding.top -
-                    kToolbarHeight,
+      body: Column(
+        children: [
+          Stack(
+            children: [
+              ClipRRect(
+                borderRadius: const BorderRadius.only(
+                  bottomLeft: Radius.circular(32),
+                  bottomRight: Radius.circular(32),
+                ),
+                child: evento.imagenUrl.isNotEmpty
+                    ? Image.network(
+                        evento.imagenUrl,
+                        height: 260,
+                        width: MediaQuery.of(context).size.width,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Container(
+                          height: 260,
+                          color: Colors.grey[300],
+                          child: const Center(child: Icon(Icons.broken_image, size: 48)),
+                        ),
+                      )
+                    : Container(
+                        height: 260,
+                        color: Colors.grey[300],
+                        child: const Center(child: Icon(Icons.broken_image, size: 48)),
+                      ),
               ),
+              Positioned(
+                top: 32,
+                left: 16,
+                child: CircleAvatar(
+                  backgroundColor: Colors.white.withOpacity(0.85),
+                  child: IconButton(
+                    icon: const Icon(Icons.arrow_back, color: Colors.black),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          Expanded(
+            child: SingleChildScrollView(
               child: Padding(
-                padding: const EdgeInsets.all(20.0),
+                padding: const EdgeInsets.all(16),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Header con información del evento
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withOpacity(0.1),
-                            spreadRadius: 1,
-                            blurRadius: 10,
-                            offset: const Offset(0, 3),
+                    // Información del evento debajo de la imagen
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.calendar_today,
+                          size: 20,
+                          color: const Color(0xFF8B1B1B),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          '${_formatearFecha(evento.fechaInicio)} - ${_formatearFecha(evento.fechaFin)}',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                            color: Color(0xFF8B1B1B),
                           ),
-                        ],
-                      ),
-                      child: Column(
-                        children: [
-                          Icon(
-                            Icons.calendar_today,
-                            size: 32,
-                            color: const Color(0xFF8B1B1B),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            '${_formatearFecha(widget.evento.fechaInicio)} - ${_formatearFecha(widget.evento.fechaFin)}',
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              color: Color(0xFF8B1B1B),
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 6),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.location_on,
-                                size: 14,
-                                color: Colors.grey.shade600,
-                              ),
-                              const SizedBox(width: 4),
-                              Flexible(
-                                child: Text(
-                                  widget.evento.lugar,
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey.shade600,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                         // Imagen del evento (fuera del botón)
-                         if (widget.evento.imagenUrl.isNotEmpty) ...[
-                           ClipRRect(
-                             borderRadius: BorderRadius.circular(12),
-                             child: Image.network(
-                               widget.evento.imagenUrl,
-                               height: 160,
-                               width: double.infinity,
-                               fit: BoxFit.cover,
-                               errorBuilder: (context, error, stackTrace) => Container(
-                                 height: 160,
-                                 color: Colors.grey[300],
-                                 child: const Center(child: Icon(Icons.broken_image, size: 48)),
-                               ),
-                             ),
-                           ),
-                           const SizedBox(height: 12),
-                         ],
-                         // Botón para ver información detallada (PDF)
-                         SizedBox(
-                           width: 220,
-                           child: _verificandoPdf
-                               ? const Center(
-                                   child: Padding(
-                                     padding: EdgeInsets.all(10.0),
-                                     child: CircularProgressIndicator(
-                                       color: Color(0xFF8B1B1B),
-                                     ),
-                                   ),
-                                 )
-                               : ElevatedButton.icon(
-                                   icon: const Icon(Icons.picture_as_pdf, size: 18),
-                                   label: Text(
-                                     _pdfExiste
-                                         ? 'Ver información detallada'
-                                         : 'Sin información adicional',
-                                     style: const TextStyle(fontSize: 13),
-                                   ),
-                                   style: ElevatedButton.styleFrom(
-                                     backgroundColor:
-                                         _pdfExiste
-                                             ? const Color(0xFF8B1B1B)
-                                             : Colors.grey,
-                                     foregroundColor: Colors.white,
-                                     shape: RoundedRectangleBorder(
-                                       borderRadius: BorderRadius.circular(12),
-                                     ),
-                                     padding: const EdgeInsets.symmetric(
-                                       vertical: 10,
-                                       horizontal: 14,
-                                     ),
-                                   ),
-                                   onPressed:
-                                       _pdfExiste ? () => _abrirPDF(context) : null,
-                                 ),
-                         ),
-
-                          const SizedBox(height: 8),
-                          // Texto referencial bajo el botón
-                          Text(
-                            _verificandoPdf
-                                ? 'Verificando disponibilidad...'
-                                : _pdfExiste
-                                    ? 'Documento con información más detallada del evento.'
-                                    : 'No hay documento adicional disponible para este evento.',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey.shade700,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-
-                               // Descripción del evento
-                               if (widget.evento.descripcion.isNotEmpty) ...[
-                                 Text(
-                                   widget.evento.descripcion,
-                                   style: const TextStyle(
-                                     fontSize: 15,
-                                     color: Color(0xFF8B1B1B),
-                                   ),
-                                   textAlign: TextAlign.center,
-                                 ),
-                                 const SizedBox(height: 12),
-                               ],
-                    const SizedBox(height: 24),
-
-                    // Título de opciones
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.location_on,
+                          size: 20,
+                          color: Colors.grey.shade600,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          evento.lugar,
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton.icon(
+                      icon: const Icon(Icons.picture_as_pdf, size: 18),
+                      label: Text(
+                        _tienePDF()
+                            ? 'Ver información detallada'
+                            : 'Sin información adicional',
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor:
+                            _tienePDF() ? const Color(0xFF8B1B1B) : Colors.grey,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 10,
+                          horizontal: 14,
+                        ),
+                      ),
+                      onPressed: _tienePDF() ? () => _abrirPDF(context) : null,
+                    ),
+                    const SizedBox(height: 8),
                     Text(
-                      '¿Qué deseas explorar?',
+                      _tienePDF()
+                          ? 'Documento con información más detallada del evento.'
+                          : 'No hay documento adicional disponible para este evento.',
                       style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFF8B1B1B),
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    // Opciones
-                    SizedBox(
-                      height: MediaQuery.of(context).size.height * 0.5,
-                      child: Column(
-                        children: [
-                          // Botón Actividades
-                          Expanded(
-                            child: _buildOpcionCard(
-                              context: context,
-                              icon: Icons.event,
-                              title: 'Actividades',
-                              subtitle: 'Ver todas las actividades del evento',
-                              color: const Color(0xFF8B1B1B),
-                              onTap: () => _navegarAActividades(context),
-                            ),
-                          ),
-
-                          const SizedBox(height: 16),
-
-                          // Botón Stands
-                          Expanded(
-                            child: _buildOpcionCard(
-                              context: context,
-                              icon: Icons.store,
-                              title: 'Stands',
-                              subtitle:
-                                  'Explora los stands y empresas participantes',
-                              color: const Color(0xFFA52A2A),
-                              onTap: () => _navegarAStands(context),
-                            ),
-                          ),
-                        ],
+                        fontSize: 14,
+                        color: Colors.grey.shade700,
                       ),
                     ),
-
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 16),
+                    Text(
+                      evento.descripcion,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        color: Color(0xFF8B1B1B),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text(
+                          '¿Qué deseas explorar?',
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF5D4037), // Color marrón similar al mostrado
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 24),
+                        Column(
+                          children: [
+                            Container(
+                              margin: const EdgeInsets.symmetric(vertical: 8),
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF5F5F5), // Fondo claro similar al mostrado
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.1),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.calendar_today,
+                                    size: 32,
+                                    color: const Color(0xFF795548), // Color marrón para el ícono
+                                  ),
+                                  const SizedBox(width: 16),
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Actividades',
+                                        style: const TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          color: Color(0xFF5D4037),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        'Consulta el programa',
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                          color: Color(0xFF8D6E63),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Container(
+                              margin: const EdgeInsets.symmetric(vertical: 8),
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF5F5F5), // Fondo claro similar al mostrado
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.1),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.store,
+                                    size: 32,
+                                    color: const Color(0xFF795548), // Color marrón para el ícono
+                                  ),
+                                  const SizedBox(width: 16),
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Stands',
+                                        style: const TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          color: Color(0xFF5D4037),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        'Encuentra a los expositores',
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                          color: Color(0xFF8D6E63),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -369,30 +320,26 @@ class _EventoOpcionesViewState extends State<EventoOpcionesView> {
                     child: Icon(icon, size: 32, color: Colors.white),
                   ),
                   const SizedBox(height: 16),
-                  Flexible(
-                    child: Text(
-                      title,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
                     ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 6),
-                  Flexible(
-                    child: Text(
-                      subtitle,
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.9),
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.9),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
                     ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 12),
                   Row(
@@ -427,7 +374,7 @@ class _EventoOpcionesViewState extends State<EventoOpcionesView> {
       context,
       MaterialPageRoute(
         builder:
-            (context) => ActividadesEventoView(evento: widget.evento, userId: widget.userId),
+            (context) => ActividadesEventoView(evento: evento, userId: userId),
       ),
     );
   }
@@ -435,39 +382,51 @@ class _EventoOpcionesViewState extends State<EventoOpcionesView> {
   void _navegarAStands(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => StandsEventoView(evento: widget.evento)),
+      MaterialPageRoute(builder: (context) => StandsEventoView(evento: evento)),
     );
+  }
+
+  // Método para verificar si el evento tiene PDF
+  bool _tienePDF() {
+    // Verificar primero si tiene URL de Supabase (nuevo sistema)
+    if (evento.pdfUrl != null && evento.pdfUrl!.isNotEmpty) {
+      return true;
+    }
+    // Compatibilidad con sistema antiguo Base64
+    return evento.pdfBase64 != null && evento.pdfBase64!.isNotEmpty;
   }
 
   // Método para abrir el PDF
   Future<void> _abrirPDF(BuildContext context) async {
-    if (_pdfUrlPublica != null) {
+    // Si tiene URL de Supabase (nuevo sistema)
+    if (evento.pdfUrl != null && evento.pdfUrl!.isNotEmpty) {
       Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => PDFViewerPage(
-            pdfUrl: _pdfUrlPublica!,
-            fileName: widget.evento.pdfNombre ?? 'documento_${widget.evento.nombre}.pdf',
+            pdfUrl: evento.pdfUrl!,
+            fileName: evento.pdfNombre ?? 'documento_${evento.nombre}.pdf',
           ),
         ),
       );
-    } else {
-      // Fallback a URL de Firestore si existe
-      if (widget.evento.pdfUrl != null && widget.evento.pdfUrl!.isNotEmpty) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => PDFViewerPage(
-              pdfUrl: widget.evento.pdfUrl!,
-              fileName: widget.evento.pdfNombre ?? 'documento_${widget.evento.nombre}.pdf',
-            ),
-          ),
-        );
-      }
+    }
+    // Compatibilidad con sistema antiguo Base64
+    else if (evento.pdfBase64 != null && evento.pdfBase64!.isNotEmpty) {
+      _abrirPDFDesdeBase64(context);
     }
   }
 
-
+  // Método legacy para PDFs en Base64 (por compatibilidad)
+  Future<void> _abrirPDFDesdeBase64(BuildContext context) async {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Este documento usa el formato antiguo. Por favor, pide al administrador que lo actualice.'),
+        backgroundColor: Colors.orange,
+        duration: Duration(seconds: 3),
+      ),
+    );
+    // Aquí podrías implementar la lógica del Base64 si quieres mantener compatibilidad completa
+  }
 
   String _formatearFecha(DateTime fecha) {
     return '${fecha.day}/${fecha.month}/${fecha.year}';
