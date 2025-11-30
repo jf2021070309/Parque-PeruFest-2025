@@ -100,85 +100,7 @@ class _DashboardUserViewState extends State<DashboardUserView> {
               padding: EdgeInsets.zero,
             ),
           ),
-          // Encabezado guinda fijo minimalista
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.only(left: 24, right: 24, top: 32, bottom: 24),
-            decoration: const BoxDecoration(
-              color: Color.fromARGB(255, 122, 0, 37),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.15),
-                    borderRadius: BorderRadius.circular(25),
-                    border: Border.all(
-                      color: Colors.white.withOpacity(0.2),
-                      width: 1,
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.waving_hand,
-                        color: Colors.white.withOpacity(0.9),
-                        size: 14,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Bienvenido al',
-                        style: TextStyle(
-                          color: Colors.white.withOpacity(0.95),
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Icon(
-                        Icons.celebration,
-                        color: Colors.white.withOpacity(0.9),
-                        size: 16,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    const Text(
-                      'PerúFest 2025',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 24,
-                        letterSpacing: 0.3,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  'Descubre eventos únicos',
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.85),
-                    fontSize: 15,
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
-              ],
-            ),
-          ),
+          // Encabezado movido dentro de la página de Eventos (_buildEventosPage)
           // Contenido principal con PageView
           Expanded(
             child: PageView(
@@ -207,19 +129,117 @@ class _DashboardUserViewState extends State<DashboardUserView> {
   Widget _buildEventosPage() {
     return Consumer<EventosViewModel>(
       builder: (context, eventosViewModel, child) {
+        // Mostrar el encabezado principal siempre dentro de la página de Eventos
+        // y luego el contenido según el estado (loading / empty / lista).
         if (eventosViewModel.isLoading) {
-          return const Center(child: CircularProgressIndicator());
+          return ListView(
+            padding: const EdgeInsets.only(top: 0, left: 0, right: 0, bottom: 0),
+            children: [
+              _buildMainHeader(),
+              const SizedBox(height: 24),
+              const Center(child: CircularProgressIndicator()),
+            ],
+          );
         } else if (eventosViewModel.eventos.isEmpty) {
-          return _buildEmptyState();
+          return ListView(
+            padding: const EdgeInsets.only(top: 0, left: 0, right: 0, bottom: 0),
+            children: [
+              _buildMainHeader(),
+              _buildEmptyState(),
+            ],
+          );
         } else {
           return ListView(
-            padding: const EdgeInsets.only(top: 16, left: 0, right: 0, bottom: 0),
+            padding: const EdgeInsets.only(top: 0, left: 0, right: 0, bottom: 0),
             children: [
+              _buildMainHeader(),
+              const SizedBox(height: 16),
               _buildEventosList(eventosViewModel.eventos),
             ],
           );
         }
       },
+    );
+  }
+
+  Widget _buildMainHeader() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.only(left: 24, right: 24, top: 32, bottom: 24),
+      decoration: const BoxDecoration(
+        color: Color.fromARGB(255, 122, 0, 37),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(25),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.2),
+                width: 1,
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.waving_hand,
+                  color: Colors.white.withOpacity(0.9),
+                  size: 14,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Bienvenido al',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.95),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  Icons.celebration,
+                  color: Colors.white.withOpacity(0.9),
+                  size: 16,
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Text(
+                'PerúFest 2025',
+                style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 24,
+                  letterSpacing: 0.3,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            'Descubre eventos únicos',
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.85),
+              fontSize: 15,
+              fontWeight: FontWeight.w400,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
