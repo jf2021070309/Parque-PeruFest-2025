@@ -8,12 +8,14 @@ class AnuncioCompacto extends StatelessWidget {
   final String zona; // 'eventos', 'actividades', 'noticias', 'general'
   final int indicePosicion; // Para determinar cuándo mostrar un anuncio
   final EdgeInsetsGeometry margin;
+  final bool mostrarPatrocinado;
 
   const AnuncioCompacto({
     super.key,
     required this.zona,
     required this.indicePosicion,
     this.margin = const EdgeInsets.symmetric(vertical: 8.0),
+    this.mostrarPatrocinado = true,
   });
 
   @override
@@ -89,33 +91,35 @@ class AnuncioCompacto extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Encabezado de patrocinio
-              Row(
-                children: [
-                  Icon(
-                    Icons.local_offer,
-                    size: 16,
-                    color: Colors.orange.shade700,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    'PATROCINADO',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
+              // Encabezado de patrocinio (opcional)
+              if (mostrarPatrocinado) ...[
+                Row(
+                  children: [
+                    Icon(
+                      Icons.local_offer,
+                      size: 16,
                       color: Colors.orange.shade700,
-                      letterSpacing: 0.5,
                     ),
-                  ),
-                  const Spacer(),
-                  Icon(
-                    Icons.info_outline,
-                    size: 14,
-                    color: Colors.grey.shade500,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
+                    const SizedBox(width: 4),
+                    Text(
+                      'PATROCINADO',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.orange.shade700,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    const Spacer(),
+                    Icon(
+                      Icons.info_outline,
+                      size: 14,
+                      color: Colors.grey.shade500,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+              ],
               
               // Contenido principal
               Row(

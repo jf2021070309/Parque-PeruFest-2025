@@ -17,231 +17,304 @@ class EventoOpcionesView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        children: [
-          Stack(
-            children: [
-              ClipRRect(
-                borderRadius: const BorderRadius.only(
-                  bottomLeft: Radius.circular(32),
-                  bottomRight: Radius.circular(32),
-                ),
-                child: evento.imagenUrl.isNotEmpty
-                    ? Image.network(
-                        evento.imagenUrl,
-                        height: 260,
-                        width: MediaQuery.of(context).size.width,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Container(
-                          height: 260,
-                          color: Colors.grey[300],
-                          child: const Center(child: Icon(Icons.broken_image, size: 48)),
-                        ),
-                      )
-                    : Container(
-                        height: 260,
-                        color: Colors.grey[300],
-                        child: const Center(child: Icon(Icons.broken_image, size: 48)),
-                      ),
-              ),
-              Positioned(
-                top: 32,
-                left: 16,
-                child: CircleAvatar(
-                  backgroundColor: Colors.white.withOpacity(0.85),
-                  child: IconButton(
-                    icon: const Icon(Icons.arrow_back, color: Colors.black),
-                    onPressed: () => Navigator.of(context).pop(),
+      backgroundColor: Colors.white,
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Stack con imagen y botones
+            Stack(
+              children: [
+                // Imagen del evento
+                Container(
+                  height: 320, // Incrementado para hacer la imagen más alta
+                  width: MediaQuery.of(context).size.width,
+                  decoration: BoxDecoration(
+                    image: DecorationImage(
+                      image: evento.imagenUrl.isNotEmpty
+                          ? NetworkImage(evento.imagenUrl)
+                          : const AssetImage('assets/images/placeholder.png') as ImageProvider,
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 ),
+                // Botón de regreso
+                Positioned(
+                  top: 32,
+                  left: 16,
+                  child: CircleAvatar(
+                    backgroundColor: Colors.white.withOpacity(0.85),
+                    child: IconButton(
+                      icon: const Icon(Icons.arrow_back, color: Colors.black),
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                  ),
+                ),
+                // Botón de favorito (corazón)
+                Positioned(
+                  top: 40,
+                  right: 16,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF2C3E50),
+                      shape: BoxShape.circle,
+                    ),
+                    child: IconButton(
+                      icon: const Icon(Icons.favorite_border, color: Colors.white, size: 20),
+                      onPressed: () {
+                        // Acción de favorito
+                      },
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+            // Contenedor blanco con bordes redondeados superiores
+            Container(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(
+                  top: Radius.circular(24),
+                ),
               ),
-            ],
-          ),
-          Expanded(
-            child: SingleChildScrollView(
+              transform: Matrix4.translationValues(0, -24, 0),
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+                padding: const EdgeInsets.all(24),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Información del evento debajo de la imagen
-                    Container(
-                      alignment: Alignment.center,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.calendar_today,
-                            size: 32,
-                            color: const Color(0xFF8B1B1B),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            '${_formatearFecha(evento.fechaInicio)} - ${_formatearFecha(evento.fechaFin)}',
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              color: Color(0xFF8B1B1B),
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 6),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.location_on,
-                                size: 14,
-                                color: Colors.grey.shade600,
-                              ),
-                              const SizedBox(width: 4),
-                              Flexible(
-                                child: Text(
-                                  evento.lugar,
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey.shade600,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 16),
-                          SizedBox(
-                            width: 220,
-                            child: ElevatedButton.icon(
-                              icon: const Icon(Icons.picture_as_pdf, size: 18),
-                              label: Text(
-                                _tienePDF()
-                                    ? 'Ver información detallada'
-                                    : 'Sin información adicional',
-                                style: const TextStyle(fontSize: 13),
-                              ),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor:
-                                    _tienePDF()
-                                        ? const Color(0xFF8B1B1B)
-                                        : Colors.grey,
-                                foregroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 10,
-                                  horizontal: 14,
-                                ),
-                              ),
-                              onPressed:
-                                  _tienePDF() ? () => _abrirPDF(context) : null,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            _tienePDF()
-                                ? 'Documento con información más detallada del evento.'
-                                : 'No hay documento adicional disponible para este evento.',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey.shade700,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
+                    // Título del evento
+                    Text(
+                      evento.nombre,
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1A1A1A),
+                        height: 1.3,
                       ),
                     ),
+                    const SizedBox(height: 8),
 
-                    // Descripción del evento
-                    if (evento.descripcion.isNotEmpty) ...[
-                      Text(
-                        evento.descripcion,
-                        style: const TextStyle(
-                          fontSize: 15,
-                          color: Color(0xFF8B1B1B),
-                        ),
-                        textAlign: TextAlign.center,
+                    // Organizador
+                    Text(
+                      'Organizado por: ${evento.organizador}',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Color(0xFF999999),
+                        fontWeight: FontWeight.w400,
                       ),
-                      const SizedBox(height: 12),
-                    ],
+                    ),
                     const SizedBox(height: 24),
 
-                    // Título de opciones
-                    Text(
-                      '¿Qué deseas explorar?',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFF8B1B1B),
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    // Opciones
+                    // Grid de información (2 columnas)
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Expanded(
-                          child: Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 8),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFF5F5F5),
-                              borderRadius: BorderRadius.circular(16),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: _buildOpcionCard(
-                              context: context,
-                              icon: Icons.event,
-                              title: 'Actividades',
-                              subtitle: 'Ver todas las actividades del evento',
-                              color: const Color(0xFF8B1B1B),
-                              onTap: () => _navegarAActividades(context),
-                            ),
+                          child: _buildInfoItem(
+                            icon: Icons.calendar_today_outlined,
+                            title: '${_formatearFechaCompacta(evento.fechaInicio)} - ${_formatearFechaCompacta(evento.fechaFin)}, ${evento.fechaInicio.year}',
+                            subtitle: '${evento.horaInicioFormateada} - ${evento.horaFinFormateada}',
                           ),
                         ),
+                        const SizedBox(width: 32),
                         Expanded(
-                          child: Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 8),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFF5F5F5),
-                              borderRadius: BorderRadius.circular(16),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: _buildOpcionCard(
-                              context: context,
-                              icon: Icons.store,
-                              title: 'Stands',
-                              subtitle: 'Explora los stands y empresas participantes',
-                              color: const Color(0xFFA52A2A),
-                              onTap: () => _navegarAStands(context),
-                            ),
+                          child: _buildInfoItem(
+                            icon: Icons.location_on_outlined,
+                            title: evento.lugar,
+                            subtitle: 'Tacna, Perú',
                           ),
                         ),
                       ],
                     ),
-
                     const SizedBox(height: 20),
+
+                    // Segunda fila del grid
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: _buildInfoItem(
+                            icon: Icons.wine_bar_outlined,
+                            title: evento.tipoEvento,
+                            subtitle: 'Tipo de evento',
+                          ),
+                        ),
+                        const SizedBox(width: 32),
+                        Expanded(
+                          child: _buildInfoItem(
+                            icon: Icons.confirmation_number_outlined,
+                            title: evento.categoria,
+                            subtitle: 'Categoría',
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 32),
+
+                    // Divisor
+                    Divider(
+                      thickness: 1.5, // Incrementado para que la línea sea más visible
+                      color: const Color.fromARGB(255, 211, 209, 209), // Color ajustado para mayor contraste
+                      height: 1, // Reducido para disminuir la separación
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Sección "Acerca del Evento"
+                    const Text(
+                      'Acerca del Evento',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1A1A1A),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        const SizedBox(width: 8),
+                        Flexible(
+                          child: Text(
+                            evento.descripcion,
+                            style: const TextStyle(
+                              fontSize: 14, // Ajustado para coincidir con la segunda imagen
+                              color: Colors.grey,
+                            ),
+                            textAlign: TextAlign.justify,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 32),
+
+                    // Título "¿Qué deseas explorar?"
+                    const Text(
+                      '¿Qué deseas explorar?',
+                      style: TextStyle(
+                        fontSize: 18, // Ajustado para coincidir con "Acerca del Evento"
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF8B1B1B), // Color guinda
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Cards de Actividades y Stands
+                    Column(
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            image: DecorationImage(
+                              image: AssetImage('assets/images/actividades.jpg'),
+                              fit: BoxFit.cover,
+                            ),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: _buildOpcionCard(
+                            context: context,
+                            icon: Icons.event,
+                            title: 'Actividades',
+                            subtitle: 'Ver todas las actividades del evento',
+                            color: Colors.transparent, // Fondo transparente para mostrar la imagen
+                            onTap: () => _navegarAActividades(context),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Container(
+                          decoration: BoxDecoration(
+                            image: DecorationImage(
+                              image: AssetImage('assets/images/stands.jpg'),
+                              fit: BoxFit.cover,
+                            ),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: _buildOpcionCard(
+                            context: context,
+                            icon: Icons.store,
+                            title: 'Stands',
+                            subtitle: 'Explora los stands y empresas participantes',
+                            color: Colors.transparent, // Fondo transparente para mostrar la imagen
+                            onTap: () => _navegarAStands(context),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Botón de información adicional (restaurado)
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        icon: const Icon(Icons.picture_as_pdf, size: 18),
+                        label: Text(
+                          _tienePDF() ? 'Ver información adicional' : 'Sin información adicional',
+                          style: const TextStyle(fontSize: 14),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _tienePDF() ? const Color(0xFF8B1B1B) : Colors.grey,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                        onPressed: _tienePDF() ? () => _abrirPDF(context) : null,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
                   ],
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
+    );
+  }
+
+  Widget _buildInfoItem({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: const Color.fromARGB(255, 218, 218, 218),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(icon, size: 20, color: const Color(0xFF666666)),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF1A1A1A),
+                  height: 1.3,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                subtitle,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: Color(0xFF999999),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -256,68 +329,75 @@ class EventoOpcionesView extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
+        height: 200,
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [color, color.withOpacity(0.8)],
+            colors: [color, color.withOpacity(0.85)],
           ),
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
               color: color.withOpacity(0.3),
-              spreadRadius: 1,
-              blurRadius: 15,
-              offset: const Offset(0, 5),
+              spreadRadius: 0,
+              blurRadius: 8,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
         child: Stack(
           children: [
-            // Icono decorativo de fondo
+            // Iconos decorativos de fondo
             Positioned(
-              right: -20,
-              top: -20,
+              right: -15,
+              bottom: -15,
               child: Icon(
                 icon,
-                size: 120,
+                size: 100,
+                color: Colors.white.withOpacity(0.15),
+              ),
+            ),
+            Positioned(
+              left: -10,
+              top: -10,
+              child: Icon(
+                icon,
+                size: 60,
                 color: Colors.white.withOpacity(0.1),
               ),
             ),
 
             // Contenido
             Padding(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(16),
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(50),
+                      color: Colors.white.withOpacity(0.25),
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Icon(icon, size: 32, color: Colors.white),
+                    child: Icon(icon, size: 28, color: Colors.white),
                   ),
-                  const SizedBox(height: 16),
+                  const Spacer(),
                   Text(
                     title,
                     style: const TextStyle(
                       color: Colors.white,
-                      fontSize: 24,
+                      fontSize: 22,
                       fontWeight: FontWeight.bold,
                     ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 6),
                   Text(
                     subtitle,
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.9),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
+                      color: Colors.white.withOpacity(0.95),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w400,
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -328,16 +408,16 @@ class EventoOpcionesView extends StatelessWidget {
                       Text(
                         'Explorar',
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.9),
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
+                          color: Colors.white.withOpacity(0.95),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
-                      const SizedBox(width: 6),
+                      const SizedBox(width: 4),
                       Icon(
                         Icons.arrow_forward,
-                        color: Colors.white.withOpacity(0.9),
-                        size: 14,
+                        color: Colors.white.withOpacity(0.95),
+                        size: 16,
                       ),
                     ],
                   ),
@@ -350,12 +430,17 @@ class EventoOpcionesView extends StatelessWidget {
     );
   }
 
+  String _formatearFechaCompacta(DateTime fecha) {
+    const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 
+                   'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+    return '${fecha.day} ${meses[fecha.month - 1]}';
+  }
+
   void _navegarAActividades(BuildContext context) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder:
-            (context) => ActividadesEventoView(evento: evento, userId: userId),
+        builder: (context) => ActividadesEventoView(evento: evento, userId: userId),
       ),
     );
   }
@@ -367,19 +452,14 @@ class EventoOpcionesView extends StatelessWidget {
     );
   }
 
-  // Método para verificar si el evento tiene PDF
   bool _tienePDF() {
-    // Verificar primero si tiene URL de Supabase (nuevo sistema)
     if (evento.pdfUrl != null && evento.pdfUrl!.isNotEmpty) {
       return true;
     }
-    // Compatibilidad con sistema antiguo Base64
     return evento.pdfBase64 != null && evento.pdfBase64!.isNotEmpty;
   }
 
-  // Método para abrir el PDF
   Future<void> _abrirPDF(BuildContext context) async {
-    // Si tiene URL de Supabase (nuevo sistema)
     if (evento.pdfUrl != null && evento.pdfUrl!.isNotEmpty) {
       Navigator.push(
         context,
@@ -390,14 +470,11 @@ class EventoOpcionesView extends StatelessWidget {
           ),
         ),
       );
-    }
-    // Compatibilidad con sistema antiguo Base64
-    else if (evento.pdfBase64 != null && evento.pdfBase64!.isNotEmpty) {
+    } else if (evento.pdfBase64 != null && evento.pdfBase64!.isNotEmpty) {
       _abrirPDFDesdeBase64(context);
     }
   }
 
-  // Método legacy para PDFs en Base64 (por compatibilidad)
   Future<void> _abrirPDFDesdeBase64(BuildContext context) async {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
@@ -406,10 +483,5 @@ class EventoOpcionesView extends StatelessWidget {
         duration: Duration(seconds: 3),
       ),
     );
-    // Aquí podrías implementar la lógica del Base64 si quieres mantener compatibilidad completa
-  }
-
-  String _formatearFecha(DateTime fecha) {
-    return '${fecha.day}/${fecha.month}/${fecha.year}';
   }
 }

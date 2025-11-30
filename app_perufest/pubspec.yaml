@@ -49,6 +49,14 @@ flutter_launcher_icons:
 
 flutter:
   uses-material-design: true
-  
+
   assets:
     - assets/images/
+
+  fonts:
+    - family: Nexa
+      fonts:
+        - asset: fonts/Nexa-Heavy.ttf
+          weight: 900
+        - asset: fonts/Nexa-ExtraLight.ttf
+          weight: 200

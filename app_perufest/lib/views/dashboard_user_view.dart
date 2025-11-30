@@ -492,21 +492,7 @@ class _DashboardUserViewState extends State<DashboardUserView> {
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 5),
-                      // Descripción más compacta
-                      if (evento.descripcion.isNotEmpty) ...[
-                        Text(
-                          evento.descripcion,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            color: Color(0xFF4A4E69),
-                            fontWeight: FontWeight.w400,
-                            height: 1.3,
-                          ),
-                          maxLines: 3,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 8),
-                      ],
+                      
                       // Información solo con fechas, estilo minimalista
                       Container(
                         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
